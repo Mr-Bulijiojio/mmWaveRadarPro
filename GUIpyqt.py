@@ -21,6 +21,8 @@ import pyqtgraph as pg
 import re
 
 class MainUi(QtWidgets.QMainWindow):
+    output_breath=[0 for i in range(0, 100) ]
+    output_heart=[0 for j in range(0, 100) ]
     def __init__(self, datalink):
         super().__init__()
         self.datadic = datalink
@@ -30,7 +32,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.width = 960
         self.height = 700
         self.init_ui()
-        self.refresh(True,True,True)
+        self.refresh(True, True, True)
 
     def init_ui(self):
         self.setWindowTitle(self.title)
@@ -68,9 +70,9 @@ class MainUi(QtWidgets.QMainWindow):
         self.lb6 = QtWidgets.QLabel('目标检测与跟踪')
         self.txt = QtWidgets.QTextEdit()
 
-        self.plot_Track = pg.PlotWidget()
-        self.plot_Rate_breath = pg.PlotWidget()
-        self.plot_Rate_heart = pg.PlotWidget()
+        plot_Track = pg.PlotWidget()
+        plot_Rate_breath = pg.PlotWidget()
+        plot_Rate_heart = pg.PlotWidget()
 
         btn1 = QtWidgets.QPushButton("R up")
         btn1.clicked.connect(lambda : print(1))
@@ -84,9 +86,9 @@ class MainUi(QtWidgets.QMainWindow):
 
         #布局
         self.left_layout.addWidget(self.lb1, 0, 0, 1, 2)
-        self.left_layout.addWidget(self.plot_Rate_breath, 1, 0, 3, 2)
+        self.left_layout.addWidget(plot_Rate_breath, 1, 0, 3, 2)
         self.left_layout.addWidget(self.lb2, 4, 0, 1, 2)
-        self.left_layout.addWidget(self.plot_Rate_heart, 5, 0, 3, 2)
+        self.left_layout.addWidget(plot_Rate_heart, 5, 0, 3, 2)
         self.left_layout.addWidget(self.lb3, 8, 0 ,1, 2)
         self.left_layout.addWidget(self.txt, 9, 0, 4, 2)
         self.left_layout.setRowStretch(0, 1)
@@ -97,7 +99,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.left_layout.setRowStretch(9, 4)
 
         self.right_layout.addWidget(self.lb6, 0, 0, 1, 6)
-        self.right_layout.addWidget(self.plot_Track, 1, 0, 10, 6)
+        self.right_layout.addWidget(plot_Track, 1, 0, 10, 6)
         self.right_layout.addWidget(self.control_widget, 11, 0, 1, 6)
         self.right_layout.setRowStretch(1, 0)
         self.right_layout.setRowStretch(2, 5)
@@ -112,12 +114,20 @@ class MainUi(QtWidgets.QMainWindow):
         self.right_layout.setRowStretch(0, 1)
         self.right_layout.setRowStretch(1, 1)
 
+        # self.plot_Rate_breath = self.pw.plot()
+        self.plot_Track = plot_Track.plot([0])
+        self.plot_Rate_breath = plot_Rate_breath.plot()
+        self.plot_Rate_heart = plot_Rate_heart.plot()
+
+
     def refresh(self, T=False, R=False, F=False):
         if T:
             pass
         if R:
             self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
             self.lb2.setText('心率:%d' % self.datadic['R'][3])
+            self.plot_Rate_breath.setData( [], pen='r', symbol='s', symbolBrush='g')
+            # self.plot_Rate_breath = self.pw.plot()
             # self.Rate_breath.set('呼吸率：%d' % self.datadic['R'][2])
             # self.Rate_heart.set('心率:%d' % self.datadic['R'][3])
         if F:

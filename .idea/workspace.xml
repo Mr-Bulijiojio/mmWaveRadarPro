@@ -22,6 +22,7 @@
     <list default="true" id="742fa588-11a1-4944-8da2-68795655b16d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GUIpyqt.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUIpyqt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ReceiveClient.py" beforeDir="false" afterPath="$PROJECT_DIR$/ReceiveClient.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -183,7 +184,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1601200834463</updated>
-      <workItem from="1601200835913" duration="14288000" />
+      <workItem from="1601200835913" duration="15323000" />
     </task>
     <task id="LOCAL-00001" summary="nothing">
       <created>1601201244757</created>
@@ -213,7 +214,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601214868672</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="PyQt 窗口完成 正在写函数">
+      <created>1601216593086</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1601216593086</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -234,29 +242,30 @@
     <MESSAGE value="nothing" />
     <MESSAGE value="GUI" />
     <MESSAGE value="PyQt 窗口完成" />
-    <option name="LAST_COMMIT_MESSAGE" value="PyQt 窗口完成" />
+    <MESSAGE value="PyQt 窗口完成 正在写函数" />
+    <option name="LAST_COMMIT_MESSAGE" value="PyQt 窗口完成 正在写函数" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="795" y="82" key="CommitChangelistDialog2" timestamp="1601214867831">
+    <state x="795" y="82" key="CommitChangelistDialog2" timestamp="1601216592391">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="795" y="82" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1601214867831" />
-    <state width="547" height="259" key="GridCell.Tab.0.bottom" timestamp="1601216332669">
+    <state x="795" y="82" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1601216592391" />
+    <state width="547" height="259" key="GridCell.Tab.0.bottom" timestamp="1601217196390">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1601216332669" />
-    <state width="547" height="259" key="GridCell.Tab.0.center" timestamp="1601216332669">
+    <state width="547" height="259" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196390" />
+    <state width="547" height="259" key="GridCell.Tab.0.center" timestamp="1601217196389">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1601216332669" />
-    <state width="547" height="259" key="GridCell.Tab.0.left" timestamp="1601216332669">
+    <state width="547" height="259" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196389" />
+    <state width="547" height="259" key="GridCell.Tab.0.left" timestamp="1601217196389">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1601216332669" />
-    <state width="547" height="259" key="GridCell.Tab.0.right" timestamp="1601216332669">
+    <state width="547" height="259" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196389" />
+    <state width="547" height="259" key="GridCell.Tab.0.right" timestamp="1601217196389">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1601216332669" />
+    <state width="547" height="259" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196389" />
     <state x="824" y="262" key="Vcs.Push.Dialog.v2" timestamp="1601201299950">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -282,7 +291,7 @@
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$GUI.coverage" NAME="GUI Coverage Results" MODIFIED="1601206960966" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$test3.coverage" NAME="test3 Coverage Results" MODIFIED="1601215125065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$example.coverage" NAME="example Coverage Results" MODIFIED="1601215903208" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/mmWaveRadarPro$GUIpyqt.coverage" NAME="GUIpyqt Coverage Results" MODIFIED="1601216332663" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mmWaveRadarPro$GUIpyqt.coverage" NAME="GUIpyqt Coverage Results" MODIFIED="1601217196379" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$test.coverage" NAME="test Coverage Results" MODIFIED="1601207369372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$test2.coverage" NAME="test2 Coverage Results" MODIFIED="1601210738746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
   </component>

@@ -13,10 +13,18 @@
 __author__ = 'Kinddle'
 import socket
 import ProtocolBase as PB
+import GUIpyqt
+from PyQt5 import QtCore, QtGui, QtWidgets
+import sys
 
 HOST = '127.0.0.1'
 Port = 12000
-
+app = QtWidgets.QApplication(sys.argv)
+datainit = {"T": [[[0, 0, 0], [1, 1, 1], [1, 2, 1]], [[3, 3, 3], [3, 3, 2], [3, 2, 1], [3, 3, 3]]],
+                'R': [0.45, 0.68, 60, 120],
+                'F': 0}
+gui = GUIpyqt.MainUi(datainit)
+gui.show()
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     # s.setblocking(False)
     s.bind((HOST, Port))
@@ -30,3 +38,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         print(get)
         print("len of rcv: {}".format(len(data)))
         print("*******************************************************")
+
+
+
+sys.exit(app.exec_())

@@ -21,8 +21,8 @@ import pyqtgraph as pg
 import re
 
 class MainUi(QtWidgets.QMainWindow):
-    output_breath=[0 for i in range(0, 100) ]
-    output_heart=[0 for j in range(0, 100) ]
+    output_breath=[-1 for i in range(0, 100) ]
+    output_heart=[-1 for j in range(0, 100) ]
     def __init__(self, datalink):
         super().__init__()
         self.datadic = datalink
@@ -115,9 +115,12 @@ class MainUi(QtWidgets.QMainWindow):
         self.right_layout.setRowStretch(1, 1)
 
         # self.plot_Rate_breath = self.pw.plot()
+        plot_Rate_heart.setYRange(max=1, min=0)
+        plot_Rate_breath.setYRange(max=1, min=0)
         self.plot_Track = plot_Track.plot([0])
         self.plot_Rate_breath = plot_Rate_breath.plot()
         self.plot_Rate_heart = plot_Rate_heart.plot()
+
 
 
     def refresh(self, T=False, R=False, F=False):
@@ -126,7 +129,14 @@ class MainUi(QtWidgets.QMainWindow):
         if R:
             self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
             self.lb2.setText('心率:%d' % self.datadic['R'][3])
-            self.plot_Rate_breath.setData( [], pen='r', symbol='s', symbolBrush='g')
+            self.output_breath=self.output_breath[1:]
+            self.output_breath.append(self.datadic['R'][0])
+            self.plot_Rate_breath.setData(self.output_breath,
+                                          pen='r', symbol=None, symbolBrush='g')
+            self.output_breath=self.output_breath[1:]
+            self.output_breath.append(self.datadic['R'][1])
+            self.plot_Rate_heart.setData(self.output_breath,
+                                         pen='r', symbol=None, symbolBrush='g')
             # self.plot_Rate_breath = self.pw.plot()
             # self.Rate_breath.set('呼吸率：%d' % self.datadic['R'][2])
             # self.Rate_heart.set('心率:%d' % self.datadic['R'][3])
@@ -139,15 +149,14 @@ class MainUi(QtWidgets.QMainWindow):
                 txt_insert += '\n'+sp_txt[i]
             self.txt.setPlainText(txt_insert)
 
-def main():
-    app = QtWidgets.QApplication(sys.argv)
-    datainit = {"T": [[[0,0,0],[1,1,1],[1,2,1]],[[3,3,3],[3,3,2],[3,2,1],[3,3,3]]],
-                'R': [0.45,0.68,60,120],
-                'F': 0}
-    gui = MainUi(datainit)
-    gui.show()
-    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    main()
+    app = QtWidgets.QApplication(sys.argv)
+    datainit = {"T": [[[0, 0, 0], [1, 1, 1], [1, 2, 1]], [[3, 3, 3], [3, 3, 2], [3, 2, 1], [3, 3, 3]]],
+                'R': [0.45, 0.68, 60, 120],
+                'F': 0}
+    gui = MainUi(datainit)
+    gui.show()
+    print('end')
+    sys.exit(app.exec_())

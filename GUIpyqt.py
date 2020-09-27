@@ -18,7 +18,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import qtawesome
 import pyqtgraph as pg
-
+import re
 
 class MainUi(QtWidgets.QMainWindow):
     def __init__(self, datalink):
@@ -30,6 +30,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.width = 960
         self.height = 700
         self.init_ui()
+        self.refresh(True,True,True)
 
     def init_ui(self):
         self.setWindowTitle(self.title)
@@ -111,11 +112,29 @@ class MainUi(QtWidgets.QMainWindow):
         self.right_layout.setRowStretch(0, 1)
         self.right_layout.setRowStretch(1, 1)
 
-
+    def refresh(self, T=False, R=False, F=False):
+        if T:
+            pass
+        if R:
+            self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
+            self.lb2.setText('心率:%d' % self.datadic['R'][3])
+            # self.Rate_breath.set('呼吸率：%d' % self.datadic['R'][2])
+            # self.Rate_heart.set('心率:%d' % self.datadic['R'][3])
+        if F:
+            stat = self.datadic['F']
+            txt_insert = ('平静' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！' if stat == 2 else "未知数据")
+            now_txt = self.txt.toPlainText()
+            sp_txt = re.split('\n', now_txt)
+            for i in range(0, min(len(sp_txt),5)):
+                txt_insert += '\n'+sp_txt[i]
+            self.txt.setPlainText(txt_insert)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    gui = MainUi()
+    datainit = {"T": [[[0,0,0],[1,1,1],[1,2,1]],[[3,3,3],[3,3,2],[3,2,1],[3,3,3]]],
+                'R': [0.45,0.68,60,120],
+                'F': 0}
+    gui = MainUi(datainit)
     gui.show()
     sys.exit(app.exec_())
 

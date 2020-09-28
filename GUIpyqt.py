@@ -21,8 +21,9 @@ import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import re
 import numpy as np
+from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QSizePolicy
-
+from PyQt5.QtCore import Qt
 
 class MainUi(QtWidgets.QMainWindow):
     left = 100
@@ -32,13 +33,14 @@ class MainUi(QtWidgets.QMainWindow):
     output_breath=[0 for i in range(0, 100) ]
     output_heart=[0 for j in range(0, 100) ]
     item=[]
-
+    textforfall=['跌倒检测：\n', '', '', '']
     def __init__(self, datalink):
         super().__init__()
         self.datadic = datalink
         self.title = 'Contoller'
 
         self.init_ui()
+        self.refresh(True, True, True)
         self.refresh(True, True, True)
 
     def init_ui(self):
@@ -79,7 +81,13 @@ class MainUi(QtWidgets.QMainWindow):
         self.lb4 = QtWidgets.QLabel('呼吸心跳雷达：')
         self.lb5 = QtWidgets.QLabel('航迹跌倒雷达：')
         self.lb6 = QtWidgets.QLabel('目标检测与跟踪')
-        self.txt = QtWidgets.QTextEdit()
+        self.txt = QtWidgets.QLabel('')
+        self.txt.setFixedWidth(int(self.width*1/3))
+        self.txt.setAutoFillBackground(True)
+        palette = QPalette()
+        palette.setColor(QPalette.Window, Qt.white)
+        self.txt.setPalette(palette)
+        # self.txt.setMaximumBlockCount(10)
 
         plot_Rate_breath = pg.PlotWidget()
         plot_Rate_heart = pg.PlotWidget()
@@ -138,6 +146,8 @@ class MainUi(QtWidgets.QMainWindow):
         new_width = max(int(a0.size().width() * 2/3), 300)
         self.plot_Track.setFixedWidth(new_width)
 
+        self.txt.setFixedWidth(int(self.width*1/3))
+
     def _init_track(self):
         w = gl.GLViewWidget()
         w.opts['distance'] = 40
@@ -188,13 +198,24 @@ class MainUi(QtWidgets.QMainWindow):
             # self.Rate_breath.set('呼吸率：%d' % self.datadic['R'][2])
             # self.Rate_heart.set('心率:%d' % self.datadic['R'][3])
         if F:
-            stat = self.datadic['F']
-            txt_insert = ('平静' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！' if stat == 2 else "未知数据")
-            now_txt = self.txt.toPlainText()
-            sp_txt = re.split('\n', now_txt)
-            for i in range(0, min(len(sp_txt),5)):
-                txt_insert += '\n'+sp_txt[i]
-            self.txt.setPlainText(txt_insert)
+            stat = self.datadic['F'][0]
+            weight = self.datadic['F'][1]
+            # weight = self.txt.blockCount()
+            txt_insert = ('平静' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！' if stat == 2 else "未知数据")\
+                        + ' 跌倒概率：' + str(1-weight)
+            # now_txt = self.txt.toPlainText()
+            # sp_txt = re.split('\n', now_txt)
+            # for i in range(0, min(len(sp_txt), 5)):
+            #     txt_insert += '\n'+sp_txt[i]
+            # if self.txt.blockCount() > 20:
+            #
+            #     self.txt.clear()
+            self.textforfall[1]=self.textforfall[2]
+            self.textforfall[2]=self.textforfall[3]
+            self.textforfall[3]=txt_insert + '\n'
+            txtnow=''.join(self.textforfall)
+            self.txt.setText(txtnow)
+
 
 
 

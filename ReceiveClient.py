@@ -30,8 +30,10 @@ def socketget(gui):
         print("ready to get data")
         while(True):
             data, addr = s.recvfrom(65536)
-            # if addr == ("127.0.0.1", 12002):
-            #     continue
+            if addr == ("127.0.0.1", 12002):
+                continue
+            if addr == ("127.0.0.1", 12003):
+                continue
             print("receive data from addr:{}".format(addr))
             get, pere = PB.Total_decode(data, datalink)
             print(get)

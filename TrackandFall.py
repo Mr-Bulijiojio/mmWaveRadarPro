@@ -330,19 +330,19 @@ class TrackandFall(threading.Thread):
                         testData[0][j] = -0.5
                 y_out = sess.run(sessy, feed_dict={sessx: testData})
                 if y_out[0] < 0.05:
-                    print("\033[1;31;40m摔倒")
+                    print("\033[1;31;40m摔倒{}".format(y_out[0]))
                     senddata=2
-                elif y_out[0] < 0.4 and y_out[0] > 0.05:
-                    print("\033[0;32;46m坐下或慢蹲")
+                elif y_out[0] < 0.2 and y_out[0] > 0.05:
+                    print("\033[0;32;46m坐下或慢蹲{}".format(y_out[0]))
                     senddata=1
                 else:
-                    print("\033[0;32;46m无事发生")
+                    print("\033[0;32;46m无事发生{}".format(y_out[0]))
                     senddata=0
                 # print(y_out)
                 self.step = 0
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
 
-                    sendbin = PB.Fall_encode(senddata)
+                    sendbin = PB.Fall_encode(senddata ,max(y_out[0]))
                     #print('len of send' + str(len(sendbin)))
 
                     s.bind(self.addr_fall)

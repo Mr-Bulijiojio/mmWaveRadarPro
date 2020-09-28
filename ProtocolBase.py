@@ -68,16 +68,18 @@ def Track_decode(data):
     return rtntracks
 
 
-def Fall_encode(senddata):
+def Fall_encode(senddata, weight):
     sendbin=b'F'
-    sendbin += IntToBytes(senddata,1)
+    sendbin += IntToBytes(senddata, 1)
+    sendbin += IntToBytes(int(weight*100), 4)
     return sendbin
 
 
 def Fall_decode(data):
-    data=data[0]
+    datarcv=data[0]
+    weight=BytesToInt(data[1:5])/100.0
     # rtnstr = "无事发生" if data == 0 else "慢蹲坐下" if data == 1 else "跌倒！！！！！！！！！！！！！" if data == 2 else "NULL"
-    return [data, 0]
+    return [datarcv, weight]
 
 
 def Rate_encode(vitalsign):
@@ -98,8 +100,8 @@ def Rate_decode(data):
     return rtnlist
 
 def IntToBytes(x:int, len:int=4):
-    if not -2**(8*4-1)<x<2**(8*4-1):
-        x = -2**(8*4-1)+1 if x < 0 else 2**(8*4-1)-1
+    if not -2**(8*4-1)< x <2**(8*4-1):
+        x = 0
     return x.to_bytes(len, byteorder="little", signed=True)
 
 def BytesToInt(x:bytes):

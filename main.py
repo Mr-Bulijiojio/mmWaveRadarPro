@@ -44,7 +44,6 @@ else:
     print("success to start module tworate")
 
 try:
-    while(True):
-        pass
+    input(">>")
 except KeyboardInterrupt:
     print("\nExit successfully!")

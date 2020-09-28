@@ -32,7 +32,7 @@ class MainUi(QtWidgets.QMainWindow):
     height = 700
     output_breath=[0 for i in range(0, 100) ]
     output_heart=[0 for j in range(0, 100) ]
-    item=[]
+    # item=[]
     textforfall=['跌倒检测：\n', '', '', '']
     def __init__(self, datalink):
         super().__init__()
@@ -91,7 +91,7 @@ class MainUi(QtWidgets.QMainWindow):
 
         plot_Rate_breath = pg.PlotWidget()
         plot_Rate_heart = pg.PlotWidget()
-        plot_Track = self._init_track()
+        plot_Track, Trackdata = self._init_track()
 
         btn1 = QtWidgets.QPushButton("R up")
         btn1.clicked.connect(lambda : print(1))
@@ -139,7 +139,10 @@ class MainUi(QtWidgets.QMainWindow):
         # self.plot_Track = plot_Track.plot([0])
         self.plot_Rate_breath = plot_Rate_breath.plot()
         self.plot_Rate_heart = plot_Rate_heart.plot()
+
         self.plot_Track = plot_Track
+        self.plot_Track_data = Trackdata
+        self.plot_Track_count = 0
 
     def resizeEvent(self, a0: QtGui.QResizeEvent):
         #缩放窗口事件！
@@ -156,28 +159,49 @@ class MainUi(QtWidgets.QMainWindow):
         w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         #坐标系
-        gx = gl.GLGridItem()
-        gx.rotate(90, 0, 1, 0)
-        gx.translate(-10, 0, 0)
-        w.addItem(gx)
-        gy = gl.GLGridItem()
-        gy.rotate(90, 1, 0, 0)
-        gy.translate(0, -10, 0)
-        w.addItem(gy)
-        gz = gl.GLGridItem()
-        gz.translate(0, 0, -10)
-        w.addItem(gz)
-        return w
+        # gx = gl.GLGridItem()
+        # gx.rotate(90, 0, 1, 0)
+        # gx.translate(-0, 0, 0)
+        # w.addItem(gx)
+        # gy = gl.GLGridItem()
+        # gy.rotate(90, 1, 0, 0)
+        # gy.translate(0, -0, 0)
+        # w.addItem(gy)
+        # gz = gl.GLGridItem()
+        # gz.translate(0, 0, -0)
+        # w.addItem(gz)
+
+        ggx = gl.GLLinePlotItem(pos=np.array([[-1, 0, 0], [1., 0, 0]]), color = (1., 1., 1., 1.), width = 2)
+        ggy = gl.GLLinePlotItem(pos=np.array([[0, -1, 0], [0, 1, 0]]), color = (1., 1., 1., 1.), width = 2)
+        ggz = gl.GLLinePlotItem(pos=np.array([[0, 0, -1], [0, 0, 1]]), color = (1., 1., 1., 1.), width = 2)
+
+        w.addItem(ggx)
+        w.addItem(ggy)
+        w.addItem(ggz)
+
+        plt = [gl.GLLinePlotItem(color = pg.glColor(235, (5+ i*49)%255, 66, 200), width = 4) for i in range(100)]
+        for i in plt:
+            w.addItem(i)
+
+        return w, plt
 
     def draw_track(self, data):
-        for j in self.item:
-            self.plot_Track.removeItem(j)
+        # for j in self.item:
+            # self.plot_Track.removeItem(j)
+        tracknum = len(data)
+        if tracknum < self.plot_Track_count:
+            for i in range(tracknum, self.plot_Track_count):
+                self.plot_Track_data[i].setData(pos=None)
+        self.plot_Track_count = tracknum
+        for i in range(tracknum):
+            pts = np.vstack(data[i])
+            pts = pts
+            self.plot_Track_data[i].setData(pos=pts)
 
-        for i in data:
-            pts = np.vstack(i)
-            plt = gl.GLLinePlotItem(pos=pts, color=pg.glColor((1, 9 * 1.3)), width=(30) / 10., antialias=True)
-            self.item.append(plt)
-            self.plot_Track.addItem(plt)
+            # plt = gl.GLLinePlotItem(pos=pts, color=pg.glColor((1, 9 * 1.3)), width=(30) / 10., antialias=True)
+            # self.item.append(plt)
+            # self.plot_Track.addItem(plt)
+
     def refresh(self, T=False, R=False, F=False):
         if T:
             self.draw_track(self.datadic['T'])
@@ -221,9 +245,9 @@ class MainUi(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    datainit = {"T": [[[0, 0, 0], [1, 1, 1], [1, 2, 1]], [[3, 3, 3], [3, 3, 2], [3, 2, 1], [3, 3, 3]]],
+    datainit = {"T": [[[0, 0, 0], [1, 1.24, 1], [1, 2, 1]], [[3, 3, 3], [3, 3, 2], [3, 2, 1], [3, 3, 3]]],
                 'R': [0.45, 0.68, 60, 120],
-                'F': 0}
+                'F': [0,0]}
     gui = MainUi(datainit)
     gui.show()
     print('end')

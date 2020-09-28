@@ -327,7 +327,7 @@ class TrackandFall(threading.Thread):
                 testData = self.frameData.reshape(1, 30)
                 for j in range(30):
                     if testData[0][j] == 0:
-                        testData[0][j] = -0.5
+                        testData[0][j] = 1e-8
                 y_out = sess.run(sessy, feed_dict={sessx: testData})
                 if y_out[0] < 0.05:
                     print("\033[1;31;40m摔倒{}".format(y_out[0]))

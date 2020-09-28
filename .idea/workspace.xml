@@ -22,6 +22,7 @@
     <list default="true" id="742fa588-11a1-4944-8da2-68795655b16d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GUIpyqt.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUIpyqt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProtocolBase.py" beforeDir="false" afterPath="$PROJECT_DIR$/ProtocolBase.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ReceiveClient.py" beforeDir="false" afterPath="$PROJECT_DIR$/ReceiveClient.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,7 +56,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
   </component>
-  <component name="RunManager" selected="Python.GUIpyqt">
+  <component name="RunManager" selected="Python.ReceiveClient">
     <configuration name="GUIpyqt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mmWaveRadarPro" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -70,6 +71,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GUIpyqt.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ReceiveClient" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mmWaveRadarPro" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ReceiveClient.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -100,7 +123,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mmWaveRadarPro" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -108,34 +131,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="test2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mmWaveRadarPro" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/test2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -168,11 +169,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ReceiveClient" />
+        <item itemvalue="Python.main" />
         <item itemvalue="Python.GUIpyqt" />
         <item itemvalue="Python.example" />
         <item itemvalue="Python.test3" />
-        <item itemvalue="Python.test2" />
-        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -184,7 +185,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1601200834463</updated>
-      <workItem from="1601200835913" duration="15323000" />
+      <workItem from="1601200835913" duration="15347000" />
+      <workItem from="1601272475287" duration="8178000" />
     </task>
     <task id="LOCAL-00001" summary="nothing">
       <created>1601201244757</created>
@@ -221,7 +223,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601216593086</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="PyQt 窗口完成 正在写函数">
+      <created>1601217594529</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1601217594529</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -237,6 +246,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="nothing" />
@@ -246,52 +256,96 @@
     <option name="LAST_COMMIT_MESSAGE" value="PyQt 窗口完成 正在写函数" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="795" y="82" key="CommitChangelistDialog2" timestamp="1601216592391">
+    <state x="795" y="82" key="CommitChangelistDialog2" timestamp="1601217593725">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="795" y="82" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1601216592391" />
-    <state width="547" height="259" key="GridCell.Tab.0.bottom" timestamp="1601217196390">
+    <state x="795" y="82" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1601217593725" />
+    <state width="1281" height="259" key="GridCell.Tab.0.bottom" timestamp="1601280720766">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196390" />
-    <state width="547" height="259" key="GridCell.Tab.0.center" timestamp="1601217196389">
+    <state width="1281" height="259" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1601280720766" />
+    <state width="1281" height="259" key="GridCell.Tab.0.center" timestamp="1601280720766">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196389" />
-    <state width="547" height="259" key="GridCell.Tab.0.left" timestamp="1601217196389">
+    <state width="1281" height="259" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1601280720766" />
+    <state width="1281" height="259" key="GridCell.Tab.0.left" timestamp="1601280720766">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196389" />
-    <state width="547" height="259" key="GridCell.Tab.0.right" timestamp="1601217196389">
+    <state width="1281" height="259" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1601280720766" />
+    <state width="1281" height="259" key="GridCell.Tab.0.right" timestamp="1601280720766">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="547" height="259" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1601217196389" />
-    <state x="824" y="262" key="Vcs.Push.Dialog.v2" timestamp="1601201299950">
+    <state width="1281" height="259" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1601280720766" />
+    <state width="1281" height="259" key="GridCell.Tab.1.bottom" timestamp="1601279005192">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="824" y="262" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1601201299950" />
-    <state x="1001" y="442" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1601200938737">
+    <state width="1281" height="259" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1601279005192" />
+    <state width="1281" height="259" key="GridCell.Tab.1.center" timestamp="1601279005192">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="1001" y="442" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1601200938737" />
+    <state width="1281" height="259" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1601279005192" />
+    <state width="1281" height="259" key="GridCell.Tab.1.left" timestamp="1601279005192">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1281" height="259" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1601279005192" />
+    <state width="1281" height="259" key="GridCell.Tab.1.right" timestamp="1601279005192">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1281" height="259" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1601279005192" />
+    <state x="824" y="262" key="Vcs.Push.Dialog.v2" timestamp="1601217599628">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="824" y="262" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1601217599628" />
+    <state x="1001" y="442" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1601272726407">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="1001" y="442" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1601272726407" />
     <state x="1024" y="67" width="837" height="740" key="dock-window-1" timestamp="1601213685843">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="1024" y="67" width="837" height="740" key="dock-window-1/0.0.1920.1040@0.0.1920.1040" timestamp="1601213685843" />
-    <state x="94" y="0" width="742" height="673" key="dock-window-2" timestamp="1601215319995">
+    <state x="94" y="0" width="881" height="673" key="dock-window-2" timestamp="1601276121199">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="94" y="0" width="742" height="673" key="dock-window-2/0.0.1920.1040@0.0.1920.1040" timestamp="1601215319995" />
+    <state x="94" y="0" width="881" height="673" key="dock-window-2/0.0.1920.1040@0.0.1920.1040" timestamp="1601276121199" />
     <state x="146" y="258" width="672" height="678" key="search.everywhere.popup" timestamp="1601210871811">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="146" y="258" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1601210871811" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ReceiveClient.py</url>
+          <line>49</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ReceiveClient.py</url>
+          <line>39</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/test/example.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/test/example.py</url>
+          <line>84</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/mmWaveRadarPro$main.coverage" NAME="main Coverage Results" MODIFIED="1601280717772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mmWaveRadarPro$ReceiveClient.coverage" NAME="ReceiveClient Coverage Results" MODIFIED="1601280720704" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$GUI.coverage" NAME="GUI Coverage Results" MODIFIED="1601206960966" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$test3.coverage" NAME="test3 Coverage Results" MODIFIED="1601215125065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/mmWaveRadarPro$example.coverage" NAME="example Coverage Results" MODIFIED="1601215903208" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/mmWaveRadarPro$GUIpyqt.coverage" NAME="GUIpyqt Coverage Results" MODIFIED="1601217196379" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mmWaveRadarPro$example.coverage" NAME="example Coverage Results" MODIFIED="1601276994290" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
+    <SUITE FILE_PATH="coverage/mmWaveRadarPro$GUIpyqt.coverage" NAME="GUIpyqt Coverage Results" MODIFIED="1601280693233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$test.coverage" NAME="test Coverage Results" MODIFIED="1601207369372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/mmWaveRadarPro$test2.coverage" NAME="test2 Coverage Results" MODIFIED="1601210738746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
   </component>

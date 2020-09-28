@@ -14,32 +14,23 @@ __author__ = 'Kinddle'
 
 import json
 
-def Total_decode(data):
+def Total_decode(data, datalink):
+    pere=[False, False, False]
     if data[0:1]==b'T':
         rtn=Track_decode(data[1:])
-    elif data[0:1]==b'F':
-        rtn = Fall_decode(data[1:])
+        datalink["T"] = rtn
+        pere[0]=True
     elif data[0:1]==b'R':
         rtn = Rate_decode(data[1:])
+        datalink['R']= rtn
+        pere[1]=True
+    elif data[0:1]==b'F':
+        rtn = Fall_decode(data[1:])
+        datalink['F'] = rtn
+        pere[2]=True
     else:
         rtn = "unknow data:{}".format(data)
-    return rtn
-    # getstr = data.decode()
-    # getdic = json.loads(getstr)
-    # rtnstr =""
-    # rtnstr+='type:{}'.format(getdic["type"])
-
-    # if getdic["type"] == "track":
-    #     rtnstr += Track_decode(getdic)
-    #
-    # elif getdic["type"] == "rate":
-    #     rtnstr += Rate_decode(getdic)
-    # elif getdic["type"] == "fall":
-    #     rtnstr += Fall_decode(getdic["data"])
-    # else:
-    #     rtnstr += "\nunknown data"
-
-    # return rtnstr
+    return rtn, pere
 
 def Track_encode(confirmedroot):
     sendbin=b'T'
@@ -61,6 +52,7 @@ def Track_decode(data):
     tracknum = data[0]
     data = data[1:]
     tmptrack = []
+    rtntracks = []
     for i in range(0, tracknum):
         pointnum = data[0]
         data = data[1:]
@@ -69,9 +61,11 @@ def Track_decode(data):
                              BytesToInt(data[2:4])/100.0,
                              BytesToInt(data[4:6])/100.0])
             data = data[6:]
+        rtntracks.append(tmptrack)
+        tmptrack = []
     assert data == bytes(4)
-    rtndic = {'Tnum': tracknum, "Tracks": tmptrack}
-    return rtndic
+    #rtndic = rtntracks  # rtntracks->[[[1,2,3],[1,2,3],[3,2,1],[5,8,9],...], [], []...]
+    return rtntracks
 
 
 def Fall_encode(senddata):
@@ -82,8 +76,8 @@ def Fall_encode(senddata):
 
 def Fall_decode(data):
     data=data[0]
-    rtnstr = "无事发生" if data == 0 else "慢蹲坐下" if data == 1 else "跌倒！！！！！！！！！！！！！" if data == 2 else "NULL"
-    return rtnstr
+    # rtnstr = "无事发生" if data == 0 else "慢蹲坐下" if data == 1 else "跌倒！！！！！！！！！！！！！" if data == 2 else "NULL"
+    return [data, 0]
 
 
 def Rate_encode(vitalsign):
@@ -100,12 +94,12 @@ def Rate_encode(vitalsign):
 
 
 def Rate_decode(data):
-    rtndic = [BytesToInt(data[0:4])/10000.0, BytesToInt(data[4:8])/10000.0, BytesToInt(data[8:12])/10.0, BytesToInt(data[12:16])/10.0]
-    return rtndic
+    rtnlist = [BytesToInt(data[0:4])/10000.0, BytesToInt(data[4:8])/10000.0, BytesToInt(data[8:12])/10.0, BytesToInt(data[12:16])/10.0]
+    return rtnlist
 
 def IntToBytes(x:int, len:int=4):
     if not -2**(8*4-1)<x<2**(8*4-1):
-        x = -2**(8*4-1) if x < 0 else 2**(8*4-1)
+        x = -2**(8*4-1)+1 if x < 0 else 2**(8*4-1)-1
     return x.to_bytes(len, byteorder="little", signed=True)
 
 def BytesToInt(x:bytes):

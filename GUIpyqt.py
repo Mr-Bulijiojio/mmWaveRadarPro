@@ -17,20 +17,27 @@ __author__ = 'Kinddle'
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import qtawesome
+import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import re
+import numpy as np
+from PyQt5.QtWidgets import QSizePolicy
+
 
 class MainUi(QtWidgets.QMainWindow):
-    output_breath=[-1 for i in range(0, 100) ]
-    output_heart=[-1 for j in range(0, 100) ]
+    left = 100
+    top = 100
+    width = 960
+    height = 700
+    output_breath=[0 for i in range(0, 100) ]
+    output_heart=[0 for j in range(0, 100) ]
+    item=[]
+
     def __init__(self, datalink):
         super().__init__()
         self.datadic = datalink
         self.title = 'Contoller'
-        self.left = 100
-        self.top = 100
-        self.width = 960
-        self.height = 700
+
         self.init_ui()
         self.refresh(True, True, True)
 
@@ -45,20 +52,24 @@ class MainUi(QtWidgets.QMainWindow):
         self.left_widget = QtWidgets.QWidget()  # 创建左侧部件
         self.left_layout = QtWidgets.QGridLayout()  # 创建左侧部件的网格布局层
         self.left_widget.setLayout(self.left_layout)  # 设置左侧部件布局为网格
+        self.left_widget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+        # self.left_widget.(0, 100, 300, self.height)
 
         self.right_widget = QtWidgets.QWidget()  # 创建右侧部件
         self.right_layout = QtWidgets.QGridLayout()
         self.right_widget.setLayout(self.right_layout)  # 设置右侧部件布局为网格
+        self.right_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
 
         self.control_widget = QtWidgets.QWidget() #创建控制部件
         self.control_layout = QtWidgets.QGridLayout()
         self.control_widget.setLayout(self.control_layout)  # 设置控制部件布局为网格
+        self.control_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.main_layout.addWidget(self.left_widget, 0, 0, 13, 2)  # 左侧部件在第0行第0列，占8行3列
         self.main_layout.addWidget(self.right_widget, 0, 2, 12, 6)  # 右侧部件在第0行第3列，占8行9列
 
-        self.main_layout.setColumnStretch(0, 2)
+        self.main_layout.setColumnStretch(0, 1)
         self.main_layout.setColumnStretch(1, 6)
         self.setCentralWidget(self.main_widget)  # 设置窗口主部件
 
@@ -70,9 +81,9 @@ class MainUi(QtWidgets.QMainWindow):
         self.lb6 = QtWidgets.QLabel('目标检测与跟踪')
         self.txt = QtWidgets.QTextEdit()
 
-        plot_Track = pg.PlotWidget()
         plot_Rate_breath = pg.PlotWidget()
         plot_Rate_heart = pg.PlotWidget()
+        plot_Track = self._init_track()
 
         btn1 = QtWidgets.QPushButton("R up")
         btn1.clicked.connect(lambda : print(1))
@@ -115,27 +126,63 @@ class MainUi(QtWidgets.QMainWindow):
         self.right_layout.setRowStretch(1, 1)
 
         # self.plot_Rate_breath = self.pw.plot()
-        plot_Rate_heart.setYRange(max=1, min=0)
-        plot_Rate_breath.setYRange(max=1, min=0)
-        self.plot_Track = plot_Track.plot([0])
+        # plot_Rate_heart.setYRange(max=1, min=0)
+        # plot_Rate_breath.setYRange(max=1, min=0)
+        # self.plot_Track = plot_Track.plot([0])
         self.plot_Rate_breath = plot_Rate_breath.plot()
         self.plot_Rate_heart = plot_Rate_heart.plot()
+        self.plot_Track = plot_Track
 
+    def resizeEvent(self, a0: QtGui.QResizeEvent):
+        #缩放窗口事件！
+        new_width = max(int(a0.size().width() * 2/3), 300)
+        self.plot_Track.setFixedWidth(new_width)
 
+    def _init_track(self):
+        w = gl.GLViewWidget()
+        w.opts['distance'] = 40
+        # w.resize(600,600)
+        w.setFixedWidth(int(self.width * 2/3))
+        w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
+        #坐标系
+        gx = gl.GLGridItem()
+        gx.rotate(90, 0, 1, 0)
+        gx.translate(-10, 0, 0)
+        w.addItem(gx)
+        gy = gl.GLGridItem()
+        gy.rotate(90, 1, 0, 0)
+        gy.translate(0, -10, 0)
+        w.addItem(gy)
+        gz = gl.GLGridItem()
+        gz.translate(0, 0, -10)
+        w.addItem(gz)
+        return w
+
+    def draw_track(self, data):
+        for j in self.item:
+            self.plot_Track.removeItem(j)
+
+        for i in data:
+            pts = np.vstack(i)
+            plt = gl.GLLinePlotItem(pos=pts, color=pg.glColor((1, 9 * 1.3)), width=(30) / 10., antialias=True)
+            self.item.append(plt)
+            self.plot_Track.addItem(plt)
     def refresh(self, T=False, R=False, F=False):
         if T:
-            pass
+            self.draw_track(self.datadic['T'])
         if R:
             self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
             self.lb2.setText('心率:%d' % self.datadic['R'][3])
+
             self.output_breath=self.output_breath[1:]
             self.output_breath.append(self.datadic['R'][0])
             self.plot_Rate_breath.setData(self.output_breath,
                                           pen='r', symbol=None, symbolBrush='g')
-            self.output_breath=self.output_breath[1:]
-            self.output_breath.append(self.datadic['R'][1])
-            self.plot_Rate_heart.setData(self.output_breath,
+
+            self.output_heart=self.output_heart[1:]
+            self.output_heart.append(self.datadic['R'][1])
+            self.plot_Rate_heart.setData(self.output_heart,
                                          pen='r', symbol=None, symbolBrush='g')
             # self.plot_Rate_breath = self.pw.plot()
             # self.Rate_breath.set('呼吸率：%d' % self.datadic['R'][2])

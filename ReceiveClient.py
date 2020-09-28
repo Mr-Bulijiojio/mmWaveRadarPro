@@ -16,29 +16,38 @@ import ProtocolBase as PB
 import GUIpyqt
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
+import threading
+
 
 HOST = '127.0.0.1'
 Port = 12000
+
+datalink = {"T": [], 'R': [0, 0, 0, 0], 'F': [0, 0]}  # 初始化数据内容
+def socketget(gui):
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        # s.setblocking(False)
+        s.bind((HOST, Port))
+        print("ready to get data")
+        while(True):
+            data, addr = s.recvfrom(65536)
+            # if addr == ("127.0.0.1", 12002):
+            #     continue
+            print("receive data from addr:{}".format(addr))
+            get, pere = PB.Total_decode(data, datalink)
+            print(get)
+            print("len of rcv: {}".format(len(data)))
+            print("*******************************************************")
+            gui.refresh(*pere)
+
 app = QtWidgets.QApplication(sys.argv)
-datainit = {"T": [[[0, 0, 0], [1, 1, 1], [1, 2, 1]], [[3, 3, 3], [3, 3, 2], [3, 2, 1], [3, 3, 3]]],
-                'R': [0.45, 0.68, 60, 120],
-                'F': 0}
-gui = GUIpyqt.MainUi(datainit)
+gui = GUIpyqt.MainUi(datalink)
 gui.show()
-with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-    # s.setblocking(False)
-    s.bind((HOST, Port))
-    print("ready to get data")
-    while(True):
-        data, addr = s.recvfrom(65536)
-        # if addr == ("127.0.0.1", 12002):
-        #     continue
-        print("receive data from addr:{}".format(addr))
-        get = PB.Total_decode(data)
-        print(get)
-        print("len of rcv: {}".format(len(data)))
-        print("*******************************************************")
-
-
+threads=threading.Thread(target=socketget, args=(gui,))
+threads.start()
 
 sys.exit(app.exec_())
+
+
+
+
+

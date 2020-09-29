@@ -9,10 +9,10 @@ import serial
 import time
 import numpy as np
 import struct
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui
-from sklearn.cluster import dbscan
-import pandas
+# import pyqtgraph as pg
+# from pyqtgraph.Qt import QtGui
+# from sklearn.cluster import dbscan
+# import pandas
 import ProtocolBase as PB
 
 import threading
@@ -35,19 +35,48 @@ class TwoRate(threading.Thread):
         self.configParameters = {}
         self.detObj = {}
         self.breathOK = True
+        self.ComportOK = False
         self.addr_2Rate = addr_2Rate
         self.addr_server = addr_server
+        self.socket_Rate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket_Rate.bind(self.addr_2Rate)
         self.system = system
+        self.start_conf = [configFileName, CLIPortID, DataPortID]
+        self._auto_start(*self.start_conf)
+
+        # self.system = system
+        # if system != "Linux" and system != "Windows":
+        #     raise SystemExit("only support Linux and Windows Com")
+        # self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
+        # try:
+        #     self.parseConfigFile(configFileName)
+        # except Exception as err:
+        #     print("something wrong in config file please check '{}'".format(configFileName))
+        #     print("There is the error report:\n{}\n****************************".format(err))
+        #     return
+        # print("open TwoRate module success")
+    def _auto_start(self, configFileName, CLIPortID, DataPortID):
+        system = self.system
         if system != "Linux" and system != "Windows":
             raise SystemExit("only support Linux and Windows Com")
         self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
+
         try:
             self.parseConfigFile(configFileName)
         except Exception as err:
             print("something wrong in config file please check '{}'".format(configFileName))
             print("There is the error report:\n{}\n****************************".format(err))
             return
-        print("open TwoRate module success")
+        print("Open VitalSign module successfully")
+        self.ComportOK = True
+
+    def _auto_close(self):
+        self.CLIport.write(('sensorStop\n').encode())
+        print('sensorStop\n')
+        self.CLIport.close()
+        self.Dataport.close()
+        self.ComportOK = False
+        self.socket_Rate.close()
 
     def serialConfig(self, configFileName, CPID, DPID, system="Linux"):
         # global CLIport
@@ -136,6 +165,18 @@ class TwoRate(threading.Thread):
         configParameters["maxVelocity"] = 3e8 / (4 * startFreq * 1e9 * (idleTime + rampEndTime) * 1e-6 * numTxAnt)
 
         self.configParameters = configParameters
+
+    def ParseCmdFrame(self, data, so):
+        if data == b'Exit\x00':  # 完全退出 包括套接字等
+            raise KeyboardInterrupt('服务器指令退出')
+        elif data == b'Close\x00':
+            if self.ComportOK:
+                self._auto_close()
+        elif data == b"Start\x00":
+            if not self.ComportOK:
+                self._auto_start(*self.start_conf)
+        else:
+            print('unknown cmd...')
 
     def readAndParseData(self, Dataport, configParameters):
         # global byteBuffer, byteBufferLength
@@ -311,21 +352,34 @@ class TwoRate(threading.Thread):
         if dataOk:
             self.test_count_dataok+=1
             sendbin = PB.Rate_encode(vitalsign)
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                s.bind(self.addr_2Rate)
-                s.sendto(sendbin, self.addr_server)
+            # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            #     s.bind(self.addr_2Rate)
+            self.socket_Rate.sendto(sendbin, self.addr_server)
             self.breathOK = True
 
         return dataOk
+
     def __del__(self):
+        self._auto_close()
         print("dataok:{}\ntry:{}\n".format(self.test_count_dataok, self.test_count_try))
+
     def run(self):
         self.detObj = {}
-        self.frameData = {}
+        # self.frameData = {}
         currentIndex = 0
         while True:
             try:
+                # try to get instruction from server
+                try:
+                    cmddata_track, addr = self.socket_Rate.recvfrom(1500)
+                    assert addr == self.addr_server
+                except Exception:
+                    pass
+                else:
+                    self.ParseCmdFrame(cmddata_track, self.socket_Rate)
                 # Update the data and check if the data is okay
+                if self.ComportOK == False:
+                    continue
                 if self.breathOK == True:
                     self.update()
 
@@ -333,11 +387,7 @@ class TwoRate(threading.Thread):
 
             # Stop the program and close everything if Ctrl + c is pressed
             except KeyboardInterrupt:
-                self.CLIport.write(('sensorStop\n').encode())
-                print('sensorStop\n')
-                self.CLIport.close()
-                self.Dataport.close()
-                # win.close()
+                self._auto_close()
                 break
 
 if __name__ == "__main__":

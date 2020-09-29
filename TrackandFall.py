@@ -13,11 +13,11 @@
 __author__ = 'Kinddle'
 
 import serial
-import time
-import numpy as np
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui
-import pyqtgraph.opengl as gl
+# import time
+# import numpy as np
+# import pyqtgraph as pg
+# from pyqtgraph.Qt import QtGui
+# import pyqtgraph.opengl as gl
 from IWR.MOT3D import *
 import numpy
 from sklearn.cluster import dbscan
@@ -53,15 +53,39 @@ class TrackandFall(threading.Thread):
         self.Z_k_prev = numpy.mat([])
         self.frameData = np.array([0, 0, 0])
         self.system = system
-
+        # 线程控制相关
+        self.ComportOK = False
         self.fallOK = True
         self.trackOK = True
         self.step = 0
-
+        # socket
         self.addr_track = addr_track
         self.addr_fall = addr_fall
         self.addr_server = addr_server
+        self.socket_Track = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket_Track.bind(self.addr_track)
+        self.socket_Track.setblocking(False)
+        self.socket_Fall = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket_Fall.bind(self.addr_fall)
+        self.socket_Fall.setblocking(False)
+        # 开启
+        self.start_conf = [configFileName, CLIPortID, DataPortID]
+        self._auto_start(*self.start_conf)
 
+        # if system != "Linux" and system != "Windows":
+        #     raise SystemExit("only support Linux and Windows Com")
+        # self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
+        #
+        # try:
+        #     self.parseConfigFile(configFileName)
+        # except Exception as err:
+        #     print("something wrong in config file please check '{}'".format(configFileName))
+        #     print("There is the error report:\n{}\n****************************".format(err))
+        #     return
+        # print("open TrackModule module successfully")
+
+    def _auto_start(self, configFileName, CLIPortID, DataPortID):
+        system = self.system
         if system != "Linux" and system != "Windows":
             raise SystemExit("only support Linux and Windows Com")
         self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
@@ -72,8 +96,15 @@ class TrackandFall(threading.Thread):
             print("something wrong in config file please check '{}'".format(configFileName))
             print("There is the error report:\n{}\n****************************".format(err))
             return
-        print("open TrackModule module success")
+        print("Open TrackModule module successfully")
+        self.ComportOK = True
 
+    def _auto_close(self):
+        self.CLIport.write(('sensorStop\n').encode())
+        print('sensorStop\n')
+        self.CLIport.close()
+        self.Dataport.close()
+        self.ComportOK = False
 
     def serialConfig(self, configFileName, CPID, DPID, system="Linux"):
         # global CLIport
@@ -301,18 +332,29 @@ class TrackandFall(threading.Thread):
 
         return dataOK, frameNumber, detObj
 
+    def ParseCmdFrame(self, data, so):
+        if data == b'Exit\x00':  # 完全退出 包括套接字等
+            raise KeyboardInterrupt('服务器指令退出')
+        elif data == b'Close\x00':
+            if self.ComportOK:
+                self._auto_close()
+        elif data == b"Start\x00":
+            if not self.ComportOK:
+                self._auto_start(*self.start_conf)
+        else:
+            print('unknown cmd...')
+
     def update_Track(self, Z_k):
 
-            self.confirmedroot, self.testroot, self.Z_k_prev = MOT(Z_k, self.Z_k_prev, self.confirmedroot, self.testroot)
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
-
-                sendbin = PB.Track_encode(self.confirmedroot)
-                #print('len of send' + str(len(sendbin)))
-                s.bind(self.addr_track)
-                s.sendto(sendbin, self.addr_server)
-            self.trackOK = True
-
-
+        self.confirmedroot, self.testroot, self.Z_k_prev = MOT(Z_k, self.Z_k_prev, self.confirmedroot, self.testroot)
+        sendbin = PB.Track_encode(self.confirmedroot)
+            # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
+            #
+            #
+            #     #print('len of send' + str(len(sendbin)))
+            #     s.bind(self.addr_track)
+        self.socket_Track.sendto(sendbin, self.addr_server)
+        self.trackOK = True
 
     def update_fall(self, sess, sessx, sessy, data):
         '''
@@ -340,17 +382,20 @@ class TrackandFall(threading.Thread):
                     senddata=0
                 # print(y_out)
                 self.step = 0
-                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
-
-                    sendbin = PB.Fall_encode(senddata ,max(y_out[0]))
-                    #print('len of send' + str(len(sendbin)))
-
-                    s.bind(self.addr_fall)
-                    s.sendto(sendbin, self.addr_server)
+                sendbin = PB.Fall_encode(senddata, max(y_out[0]))
+                # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
+                #     #print('len of send' + str(len(sendbin)))
+                #
+                #     s.bind(self.addr_fall)
+                self.socket_Fall.sendto(sendbin, self.addr_server)
             self.frameData = np.delete(self.frameData, 0, axis=0)
 
         self.fallOK = True
+
     def __del__(self):
+        self._auto_close()
+        self.socket_Fall.close()
+        self.socket_Track.close()
         print("try:{}\ndataok:{}\ntrackok:{}\nfallok:{}\n".format(self.test_count_try, self.test_count_dataok, self.test_count_trackok, self.test_count_fallok))
 
     # ------------------------------main----------------------------
@@ -378,7 +423,26 @@ class TrackandFall(threading.Thread):
                     print("**MainLoop************************************************************")
                     while True:
                         try:
+                            # try to get  instructions from servers:
+                            # 服务器关闭串口时，两者任意一个即可
+                            try:
+                                cmddata_fall, addr = self.socket_Fall.recvfrom(1500)
+                                assert addr == self.addr_server
+                            except Exception :
+                                pass
+                            else:
+                                self.ParseCmdFrame(cmddata_fall, self.socket_Fall)
+
+                            try:
+                                cmddata_track, addr = self.socket_Fall.recvfrom(1500)
+                                assert addr == self.addr_server
+                            except Exception :
+                                pass
+                            else:
+                                self.ParseCmdFrame(cmddata_track, self.socket_Track)
                             # Update the data and check if the data is okay
+                            if self.ComportOK == False:
+                                continue
                             dataOk, frameNumber, detObj = self.readAndParseData(self.Dataport, self.configParameters)
                             self.test_count_try+=1
                             if dataOk:
@@ -427,13 +491,7 @@ class TrackandFall(threading.Thread):
                             time.sleep(0.01)
                         # Stop the program and close everything if Ctrl + c is pressed
                         except KeyboardInterrupt:
-                            self.CLIport.write(('sensorStop\n').encode())
-                            print('sensorStop\n')
-                            self.CLIport.close()
-                            self.Dataport.close()
-                            print(self.test_count_dataok)
-                            print(self.test_count_fallok)
-                            print(self.test_count_trackok)
+                            # self._auto_close()
                             break
 
                 else:

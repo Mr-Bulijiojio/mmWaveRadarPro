@@ -16,10 +16,8 @@ __author__ = 'Kinddle'
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-import qtawesome
 import pyqtgraph.opengl as gl
 import pyqtgraph as pg
-import re
 import numpy as np
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QSizePolicy
@@ -33,7 +31,7 @@ class MainUi(QtWidgets.QMainWindow):
     output_breath=[0 for i in range(0, 100) ]
     output_heart=[0 for j in range(0, 100) ]
     # item=[]
-    textforfall=['跌倒检测：\n', '', '', '']
+    textforfall=['跌倒检测：\n']+['' for _ in range(5)]
     def __init__(self, datalink):
         super().__init__()
         self.datadic = datalink
@@ -234,9 +232,8 @@ class MainUi(QtWidgets.QMainWindow):
             # if self.txt.blockCount() > 20:
             #
             #     self.txt.clear()
-            self.textforfall[1]=self.textforfall[2]
-            self.textforfall[2]=self.textforfall[3]
-            self.textforfall[3]=txt_insert + '\n'
+            self.textforfall.pop(1)
+            self.textforfall.append(txt_insert + '\n')
             txtnow=''.join(self.textforfall)
             self.txt.setText(txtnow)
 

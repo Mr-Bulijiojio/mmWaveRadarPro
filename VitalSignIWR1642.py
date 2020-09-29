@@ -58,8 +58,13 @@ class TwoRate(threading.Thread):
         system = self.system
         if system != "Linux" and system != "Windows":
             raise SystemExit("only support Linux and Windows Com")
-        self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
 
+        try:
+            self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
+        except Exception as err:
+            print('open Com Fail...')
+            print('There is the error report:\n{}\n****************************'.format(err))
+            return
         try:
             self.parseConfigFile(configFileName)
         except Exception as err:

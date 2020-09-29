@@ -22,9 +22,9 @@ from IWR.MOT3D import *
 import numpy
 from sklearn.cluster import dbscan
 import pandas
-
-import MLP.MLP_forward as MLP_forward
-import MLP.MLP_backward as MLP_backward
+#
+# import MLP.MLP_forward as MLP_forward
+# import MLP.MLP_backward as MLP_backward
 from MLP.MLP_app import *
 import tensorflow as tf
 import ProtocolBase as PB
@@ -32,7 +32,7 @@ import ProtocolBase as PB
 import os
 import threading
 import socket
-import json
+
 
 
 class TrackandFall(threading.Thread):
@@ -100,11 +100,14 @@ class TrackandFall(threading.Thread):
         self.ComportOK = True
 
     def _auto_close(self):
-        self.CLIport.write(('sensorStop\n').encode())
-        print('sensorStop\n')
-        self.CLIport.close()
-        self.Dataport.close()
+        if self.CLIport:
+            self.CLIport.write(('sensorStop\n').encode())
+            print('sensorStop\n')
+            self.CLIport.close()
+        if self.Dataport:
+            self.Dataport.close()
         self.ComportOK = False
+
 
     def serialConfig(self, configFileName, CPID, DPID, system="Linux"):
         # global CLIport
@@ -333,6 +336,7 @@ class TrackandFall(threading.Thread):
         return dataOK, frameNumber, detObj
 
     def ParseCmdFrame(self, data, so):
+        print('rcv cmd')
         if data == b'Exit\x00':  # 完全退出 包括套接字等
             raise KeyboardInterrupt('服务器指令退出')
         elif data == b'Close\x00':

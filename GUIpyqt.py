@@ -32,14 +32,15 @@ class MainUi(QtWidgets.QMainWindow):
     output_heart=[0 for j in range(0, 100) ]
     # item=[]
     textforfall=['跌倒检测：\n']+['' for _ in range(5)]
-    def __init__(self, datalink):
+    def __init__(self, datalink, sendcmdfun):
         super().__init__()
         self.datadic = datalink
         self.title = 'Contoller'
+        self.sendcmd = sendcmdfun
 
         self.init_ui()
-        self.refresh(True, True, True)
-        self.refresh(True, True, True)
+        # self.refresh(True, True, True)
+        # self.refresh(True, True, True)
 
     def init_ui(self):
         self.setWindowTitle(self.title)
@@ -92,13 +93,13 @@ class MainUi(QtWidgets.QMainWindow):
         plot_Track, Trackdata = self._init_track()
 
         btn1 = QtWidgets.QPushButton("R up")
-        btn1.clicked.connect(lambda : print(1))
+        btn1.clicked.connect(lambda: self.sendcmd('R', 'Start'))
         btn2 = QtWidgets.QPushButton('R down')
-        btn2.clicked.connect(lambda : print(1))
+        btn2.clicked.connect(lambda: self.sendcmd('R', 'Close'))
         btn3 = QtWidgets.QPushButton('FT up')
-        btn3.clicked.connect(lambda : print(1))
+        btn3.clicked.connect(lambda: self.sendcmd('F', 'Start'))
         btn4 = QtWidgets.QPushButton('FT down')
-        btn4.clicked.connect(lambda : print(1))
+        btn4.clicked.connect(lambda: self.sendcmd('F', 'Close'))
 
 
         #布局
@@ -237,7 +238,8 @@ class MainUi(QtWidgets.QMainWindow):
             txtnow=''.join(self.textforfall)
             self.txt.setText(txtnow)
 
-
+    # def button_sendcmd(self, data, dst):
+    #     pass
 
 
 if __name__ == '__main__':
@@ -245,7 +247,7 @@ if __name__ == '__main__':
     datainit = {"T": [[[0, 0, 0], [1, 1.24, 1], [1, 2, 1]], [[3, 3, 3], [3, 3, 2], [3, 2, 1], [3, 3, 3]]],
                 'R': [0.45, 0.68, 60, 120],
                 'F': [0,0]}
-    gui = MainUi(datainit)
+    gui = MainUi(datainit, None)
     gui.show()
     print('end')
     sys.exit(app.exec_())

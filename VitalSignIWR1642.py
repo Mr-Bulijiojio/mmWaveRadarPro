@@ -17,7 +17,6 @@ import ProtocolBase as PB
 
 import threading
 import socket
-import json
 
 class TwoRate(threading.Thread):
     test_count_dataok = 0
@@ -71,12 +70,13 @@ class TwoRate(threading.Thread):
         self.ComportOK = True
 
     def _auto_close(self):
-        self.CLIport.write(('sensorStop\n').encode())
-        print('sensorStop\n')
-        self.CLIport.close()
-        self.Dataport.close()
+        if self.CLIport:
+            self.CLIport.write(('sensorStop\n').encode())
+            print('sensorStop\n')
+            self.CLIport.close()
+        if self.Dataport:
+            self.Dataport.close()
         self.ComportOK = False
-        self.socket_Rate.close()
 
     def serialConfig(self, configFileName, CPID, DPID, system="Linux"):
         # global CLIport
@@ -361,6 +361,7 @@ class TwoRate(threading.Thread):
 
     def __del__(self):
         self._auto_close()
+        self.socket_Rate.close()
         print("dataok:{}\ntry:{}\n".format(self.test_count_dataok, self.test_count_try))
 
     def run(self):

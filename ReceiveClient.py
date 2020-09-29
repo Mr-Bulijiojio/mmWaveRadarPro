@@ -23,28 +23,62 @@ HOST = '127.0.0.1'
 Port = 12000
 
 datalink = {"T": [], 'R': [0, 0, 0, 0], 'F': [0, 0]}  # 初始化数据内容
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.bind((HOST, Port))
+addrdic = {'T': (HOST, 12001), 'R': (HOST, 12003), 'F': (HOST, 12002)}
+
+
+def cmdsend(dst: str, cmddata: str):
+    if dst == "T" or dst == 'R' or dst == 'F':
+        s.sendto(cmddata.encode() + bytes(1), addrdic[dst])
+    # elif dst == "R":
+    #     s.sendto(cmddata.encode() + bytes(1), addr_R)
+    # elif dst == 'F':
+    #     s.sendto(cmddata.encode() + bytes(1), addr_F)
+    elif dst == 'C':
+        if cmddata == 'Exit':
+            raise KeyboardInterrupt
+    else:
+        pass
+    print('send successful')
+
 def socketget(gui):
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+    # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         # s.setblocking(False)
-        s.bind((HOST, Port))
+    try:
         print("ready to get data")
+        s.setblocking(False)
         while(True):
-            data, addr = s.recvfrom(65536)
-            if addr == ("127.0.0.1", 12002):
+            try:
+                data, addr = s.recvfrom(65536)
+            except Exception:
                 continue
-            if addr == ("127.0.0.1", 12003):
-                continue
+            # if addr == ("127.0.0.1", 12002):
+            #     continue
+            # if addr == ("127.0.0.1", 12003):
+            #     continue
             print("receive data from addr:{}".format(addr))
+            # 更新目的地址
+            addrdic[data[0:1].decode()] = addr
             get, pere = PB.Total_decode(data, datalink)
+
             print(get)
             print("len of rcv: {}".format(len(data)))
             print("*******************************************************")
             gui.refresh(*pere)
+    except KeyboardInterrupt:
+        print('stop to get data')
+        s.close()
+
 
 app = QtWidgets.QApplication(sys.argv)
-gui = GUIpyqt.MainUi(datalink)
+
+gui = GUIpyqt.MainUi(datalink, cmdsend)
 gui.show()
-threads=threading.Thread(target=socketget, args=(gui,))
+threads = threading.Thread(target=socketget, args=(gui,))
+
+
 threads.start()
 
 sys.exit(app.exec_())

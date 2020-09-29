@@ -40,6 +40,7 @@ class TwoRate(threading.Thread):
         self.socket_Rate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_Rate.bind(self.addr_2Rate)
         self.system = system
+
         self.start_conf = [configFileName, CLIPortID, DataPortID]
         self._auto_start(*self.start_conf)
 

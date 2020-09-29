@@ -225,7 +225,7 @@ class MainUi(QtWidgets.QMainWindow):
             weight = self.datadic['F'][1]
             # weight = self.txt.blockCount()
             txt_insert = ('平静' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！' if stat == 2 else "未知数据")\
-                        + ' 跌倒概率：' + str(1-weight)
+                        + ' 跌倒概率：%.2f' % (1-weight)
             # now_txt = self.txt.toPlainText()
             # sp_txt = re.split('\n', now_txt)
             # for i in range(0, min(len(sp_txt), 5)):
@@ -237,9 +237,6 @@ class MainUi(QtWidgets.QMainWindow):
             self.textforfall.append(txt_insert + '\n')
             txtnow=''.join(self.textforfall)
             self.txt.setText(txtnow)
-
-    # def button_sendcmd(self, data, dst):
-    #     pass
 
 
 if __name__ == '__main__':

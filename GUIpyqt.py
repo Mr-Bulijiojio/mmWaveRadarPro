@@ -28,10 +28,12 @@ class MainUi(QtWidgets.QMainWindow):
     top = 100
     width = 960
     height = 700
-    output_breath=[0 for i in range(0, 100) ]
-    output_heart=[0 for j in range(0, 100) ]
+    length = 400
+    output_breath = [0 for i in range(0, length) ]
+    output_heart=[0 for j in range(0, length) ]
+    poss=0
     # item=[]
-    textforfall=['跌倒检测：\n']+['' for _ in range(5)]
+    textforfall=['跌倒检测：\n']+['' for _ in range(9)]
     def __init__(self, datalink, sendcmdfun):
         super().__init__()
         self.datadic = datalink
@@ -90,6 +92,9 @@ class MainUi(QtWidgets.QMainWindow):
 
         plot_Rate_breath = pg.PlotWidget()
         plot_Rate_heart = pg.PlotWidget()
+        plot_Rate_heart.setYRange(max = 2.5 ,min = -2.5)
+        plot_Rate_breath.setYRange(max = 2.5 ,min = -2.5)
+
         plot_Track, Trackdata = self._init_track()
 
         btn1 = QtWidgets.QPushButton("R up")
@@ -156,23 +161,28 @@ class MainUi(QtWidgets.QMainWindow):
         # w.resize(600,600)
         w.setFixedWidth(int(self.width * 2/3))
         w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
+        scale = 5
         #坐标系
-        # gx = gl.GLGridItem()
-        # gx.rotate(90, 0, 1, 0)
-        # gx.translate(-0, 0, 0)
-        # w.addItem(gx)
-        # gy = gl.GLGridItem()
-        # gy.rotate(90, 1, 0, 0)
-        # gy.translate(0, -0, 0)
-        # w.addItem(gy)
-        # gz = gl.GLGridItem()
-        # gz.translate(0, 0, -0)
-        # w.addItem(gz)
+        gx = gl.GLGridItem()
+        gx.rotate(90, 0, 1, 0)
+        gx.translate(-scale, scale, 0)
+        gx.setSize(2*scale,2*scale,2*scale)
+        w.addItem(gx)
 
-        ggx = gl.GLLinePlotItem(pos=np.array([[-1, 0, 0], [1., 0, 0]]), color = (1., 1., 1., 1.), width = 2)
-        ggy = gl.GLLinePlotItem(pos=np.array([[0, -1, 0], [0, 1, 0]]), color = (1., 1., 1., 1.), width = 2)
-        ggz = gl.GLLinePlotItem(pos=np.array([[0, 0, -1], [0, 0, 1]]), color = (1., 1., 1., 1.), width = 2)
+        gy = gl.GLGridItem()
+        gy.rotate(90, 1, 0, 0)
+        gy.translate(0, -0, 0)
+        gy.setSize(2*scale,2*scale,2*scale)
+        w.addItem(gy)
+
+        gz = gl.GLGridItem()
+        gz.translate(0, scale, -scale)
+        gz.setSize(2*scale,2*scale,2*scale)
+        w.addItem(gz)
+
+        ggx = gl.GLLinePlotItem(pos=np.array([[-scale, 0, 0], [scale, 0, 0]]), color = (1., 0., 0., 1.), width = 2)
+        ggy = gl.GLLinePlotItem(pos=np.array([[0, -0, 0], [0, 2*scale, 0]]), color = (0., 1., 0., 1.), width = 2)
+        ggz = gl.GLLinePlotItem(pos=np.array([[0, 0, -scale], [0, 0, scale]]), color = (0., 0., 1., 1.), width = 2)
 
         w.addItem(ggx)
         w.addItem(ggy)
@@ -208,31 +218,25 @@ class MainUi(QtWidgets.QMainWindow):
             self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
             self.lb2.setText('心率:%d' % self.datadic['R'][3])
 
-            self.output_breath=self.output_breath[1:]
-            self.output_breath.append(self.datadic['R'][0])
+            self.output_breath[self.poss] = self.datadic['R'][0]
+            # self.output_breath=self.output_breath[1:]
+            # self.output_breath.append(self.datadic['R'][0])
             self.plot_Rate_breath.setData(self.output_breath,
-                                          pen='r', symbol=None, symbolBrush='g')
+                                          pen='g', symbol=None, symbolBrush='g')
 
-            self.output_heart=self.output_heart[1:]
-            self.output_heart.append(self.datadic['R'][1])
+            self.output_heart[self.poss] = self.datadic['R'][1]
+            # self.output_heart=self.output_heart[1:]
+            # self.output_heart.append(self.datadic['R'][1])
             self.plot_Rate_heart.setData(self.output_heart,
-                                         pen='r', symbol=None, symbolBrush='g')
-            # self.plot_Rate_breath = self.pw.plot()
-            # self.Rate_breath.set('呼吸率：%d' % self.datadic['R'][2])
-            # self.Rate_heart.set('心率:%d' % self.datadic['R'][3])
+                                         pen='y', symbol=None, symbolBrush='g')
+            self.poss =(self.poss + 1) % self.length
         if F:
             stat = self.datadic['F'][0]
             weight = self.datadic['F'][1]
             # weight = self.txt.blockCount()
             txt_insert = ('平静' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！' if stat == 2 else "未知数据")\
                         + ' 跌倒概率：%.2f' % (1-weight)
-            # now_txt = self.txt.toPlainText()
-            # sp_txt = re.split('\n', now_txt)
-            # for i in range(0, min(len(sp_txt), 5)):
-            #     txt_insert += '\n'+sp_txt[i]
-            # if self.txt.blockCount() > 20:
-            #
-            #     self.txt.clear()
+
             self.textforfall.pop(1)
             self.textforfall.append(txt_insert + '\n')
             txtnow=''.join(self.textforfall)

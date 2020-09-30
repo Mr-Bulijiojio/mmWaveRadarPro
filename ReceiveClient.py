@@ -19,7 +19,7 @@ import sys
 import threading
 
 
-HOST = '127.0.0.1'
+HOST = '192.168.137.1'
 Port = 12000
 
 datalink = {"T": [], 'R': [0, 0, 0, 0], 'F': [0, 0]}  # 初始化数据内容
@@ -32,10 +32,7 @@ addrdic = {'T': (HOST, 12001), 'R': (HOST, 12003), 'F': (HOST, 12002)}
 def cmdsend(dst: str, cmddata: str):
     if dst == "T" or dst == 'R' or dst == 'F':
         s.sendto(cmddata.encode() + bytes(1), addrdic[dst])
-    # elif dst == "R":
-    #     s.sendto(cmddata.encode() + bytes(1), addr_R)
-    # elif dst == 'F':
-    #     s.sendto(cmddata.encode() + bytes(1), addr_F)
+
     elif dst == 'C':
         if cmddata == 'Exit':
             raise KeyboardInterrupt
@@ -54,13 +51,11 @@ def socketget(gui):
                 data, addr = s.recvfrom(65536)
             except Exception:
                 continue
-            # if addr == ("127.0.0.1", 12002):
-            #     continue
-            # if addr == ("127.0.0.1", 12003):
-            #     continue
             print("receive data from addr:{}".format(addr))
             # 更新目的地址
-            addrdic[data[0:1].decode()] = addr
+            if len(data) == 1:
+                addrdic[data[0:1].decode()] = addr
+                continue
             get, pere = PB.Total_decode(data, datalink)
 
             print(get)

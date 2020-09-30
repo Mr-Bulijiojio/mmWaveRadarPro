@@ -53,6 +53,7 @@ class TrackandFall(threading.Thread):
         self.Z_k_prev = numpy.mat([])
         self.frameData = np.array([0, 0, 0])
         self.system = system
+        self.track_zero_flag = True
         # 线程控制相关
         self.ComportOK = False
         self.fallOK = True
@@ -65,9 +66,11 @@ class TrackandFall(threading.Thread):
         self.socket_Track = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_Track.bind(self.addr_track)
         self.socket_Track.setblocking(False)
+        self.socket_Track.sendto(b"T", addr_server)
         self.socket_Fall = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_Fall.bind(self.addr_fall)
         self.socket_Fall.setblocking(False)
+        self.socket_Fall.sendto(b"F", addr_server)
         # 开启
         self.start_conf = [configFileName, CLIPortID, DataPortID]
 
@@ -121,8 +124,8 @@ class TrackandFall(threading.Thread):
 
         # Raspberry Linux
         if system == "Linux":
-            self.CLIport = serial.Serial('/dev/ttyACM%d' % CPID, 115200)
-            self.Dataport = serial.Serial('/dev/ttyACM%d' % DPID, 921600)
+            self.CLIport = serial.Serial('/dev/My_Serial%d' % CPID, 115200)
+            self.Dataport = serial.Serial('/dev/My_Serial%d' % DPID, 921600)
 
         # Windows
         elif system == "Windows":
@@ -135,7 +138,7 @@ class TrackandFall(threading.Thread):
             print(i)
             # if i[0] != '%':
             self.CLIport.write((i + '\n').encode())
-            time.sleep(0.01)
+            time.sleep(0.1)
 
         # return self.CLIport, self.Dataport
 
@@ -328,7 +331,7 @@ class TrackandFall(threading.Thread):
             # Remove already processed data
             if 0 < idX < self.byteBufferLength:
                 shiftSize = totalPacketLen
-
+                # print(totalPacketLen)
                 self.byteBuffer[:self.byteBufferLength - shiftSize] = self.byteBuffer[shiftSize:self.byteBufferLength]
                 self.byteBuffer[self.byteBufferLength - shiftSize:] = np.zeros(len(self.byteBuffer[self.byteBufferLength - shiftSize:]),
                                                                      dtype='uint8')
@@ -356,12 +359,15 @@ class TrackandFall(threading.Thread):
     def update_Track(self, Z_k):
 
         self.confirmedroot, self.testroot, self.Z_k_prev = MOT(Z_k, self.Z_k_prev, self.confirmedroot, self.testroot)
+        if len(self.confirmedroot) == 0:
+            if self.track_zero_flag:
+                self.trackOK = True
+                return
+            else:
+                self.track_zero_flag = True
+        else:
+            self.track_zero_flag = False
         sendbin = PB.Track_encode(self.confirmedroot)
-            # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
-            #
-            #
-            #     #print('len of send' + str(len(sendbin)))
-            #     s.bind(self.addr_track)
         self.socket_Track.sendto(sendbin, self.addr_server)
         self.trackOK = True
 
@@ -484,14 +490,14 @@ class TrackandFall(threading.Thread):
                                 if self.fallOK:
                                     self.fallOK = False
                                     self.test_count_fallok +=1
-                                    tmp_thread_fall = threading.Thread(target=self.update_fall,
+                                    tmp_thread_fall = threading.Thread(target=self.update_fall, daemon=True,
                                                                        args=(sess, sessx, sessy, tmp[0]))
                                     tmp_thread_fall.start()
                                     # self.update_fall(sess, sessx, sessy, tmp[0])
                                 if self.trackOK:
                                     self.trackOK = False
                                     self.test_count_trackok +=1
-                                    tmp_thread_track = threading.Thread(target=self.update_Track,
+                                    tmp_thread_track = threading.Thread(target=self.update_Track, daemon=True,
                                                                         args=(Z_k,))
                                     tmp_thread_track.start()
                                     # self.update_Track(Z_k)
@@ -505,27 +511,7 @@ class TrackandFall(threading.Thread):
 
                 else:
                     print("No checkpoint file found")
-        # while True:
-        #     try:
-        #         # Update the data and check if the data is okay
-        #         dataOk = 0
-        #         dataOk, frameNumber, detObj = self.readAndParseData(self.Dataport, self.configParameters)
-        #         dataOk = self.update_Track(dataOk, frameNumber, detObj)
-        #
-        #         # if dataOk:
-        #         #     # Store the current frame into frameData
-        #         #     frameData[currentIndex] = detObj
-        #         #     currentIndex += 0
-        #
-        #         time.sleep(0.01)  # Sampling frequency of 20 Hz
 
-            # # Stop the program and close everything if Ctrl + c is pressed
-            # except KeyboardInterrupt:
-            #     self.CLIport.write(('sensorStop\n').encode())
-            #     print('sensorStop\n')
-            #     self.CLIport.close()
-            #     self.Dataport.close()
-            #     break
 
 if __name__ == "__main__":
     tst = TrackandFall(CLIPortID=11, DataPortID=12, system="Windows")

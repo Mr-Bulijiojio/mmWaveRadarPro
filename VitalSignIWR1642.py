@@ -39,6 +39,8 @@ class TwoRate(threading.Thread):
         self.addr_server = addr_server
         self.socket_Rate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_Rate.bind(self.addr_2Rate)
+        self.socket_Rate.setblocking(False)
+        self.socket_Rate.sendto(b'R',addr_server)
         self.system = system
 
         self.start_conf = [configFileName, CLIPortID, DataPortID]
@@ -91,8 +93,8 @@ class TwoRate(threading.Thread):
 
         # Raspberry Linux
         if system == "Linux":
-            self.CLIport = serial.Serial('/dev/ttyACM%d' % CPID, 115200)
-            self.Dataport = serial.Serial('/dev/ttyACM%d' % DPID, 921600)
+            self.CLIport = serial.Serial('/dev/My_Serial%d' % CPID, 115200)
+            self.Dataport = serial.Serial('/dev/My_Serial%d' % DPID, 921600)
 
         # Windows
         elif system == "Windows":
@@ -105,7 +107,7 @@ class TwoRate(threading.Thread):
             print(i)
             # if i[0] != '%':
             self.CLIport.write((i + '\n').encode())
-            time.sleep(0.03)
+            time.sleep(1)
 
         # return self.CLIport, self.Dataport
 
@@ -239,8 +241,10 @@ class TwoRate(threading.Thread):
 
                 # Check that there have no errors with the byte buffer length
                 if self.byteBufferLength < 0:
+                    print('byteBufferLength')
                     self.byteBufferLength = 0
-
+                if self.byteBufferLength < 16:
+                    return dataOK,None,None
                 # Read the total packet length
                 totalPacketLen = int.from_bytes(self.byteBuffer[12:12 + 4], byteorder='little')
 
@@ -271,7 +275,7 @@ class TwoRate(threading.Thread):
             idX += 4
             numTLVs = int.from_bytes(self.byteBuffer[idX:idX + 4], byteorder='little')
             idX += 4
-            subFrameNumber = int.from_bytes(self.byteBuffer[idX:idX + 4], byteorder='little')
+            reserved = int.from_bytes(self.byteBuffer[idX:idX + 4], byteorder='little')
             idX += 4
 
             # Read the TLV messages
@@ -361,7 +365,7 @@ class TwoRate(threading.Thread):
             # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             #     s.bind(self.addr_2Rate)
             self.socket_Rate.sendto(sendbin, self.addr_server)
-            self.breathOK = True
+        self.breathOK = True
 
         return dataOk
 
@@ -388,6 +392,7 @@ class TwoRate(threading.Thread):
                 if self.ComportOK == False:
                     continue
                 if self.breathOK == True:
+                    self.breathOK = False
                     self.update()
 
                 time.sleep(0.04)

@@ -14,14 +14,17 @@ __author__ = 'Kinddle'
 
 import TrackandFall as Track3D
 import VitalSignIWR1642 as VitalSign
+import warnings
 
-SystemEnv = 'Windows'
-TrackHost = ("127.0.0.1", 12001)
-FallHost = ("127.0.0.1", 12002)
-TwoRate = ("127.0.0.1",12003)
-ServerHost = ('127.0.0.1', 12000)
-CLIPortID = [11, 10]
-DataPortID = [12, 9]
+warnings.filterwarnings('ignore')
+
+SystemEnv = 'Linux'
+TrackHost = ("192.168.137.88", 12001)
+FallHost = ("192.168.137.88", 12002)
+TwoRate = ("192.168.137.88",12003)
+ServerHost = ('192.168.137.1', 12000)
+CLIPortID = [0, 2]
+DataPortID = [1, 3]
 
 
 
@@ -31,6 +34,7 @@ try:
     trackandfall.start()
 except Exception as z:
     print("fail to start module trackandfall")
+    print(z)
 else:
     print("success to start module trackandfall")
 
@@ -40,6 +44,7 @@ try:
     tworate.start()
 except Exception as z:
     print("fail to start module tworate")
+    print(z)
 else:
     print("success to start module tworate")
 
@@ -47,3 +52,6 @@ try:
     input(">>")
 except KeyboardInterrupt:
     print("\nExit successfully!")
+
+del tworate
+del trackandfall

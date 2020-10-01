@@ -19,14 +19,15 @@ import sys
 import threading
 
 
-HOST = '192.168.137.1'
+HOST_S = '192.168.137.1'
+HOST_C = '192.168.137.88'
 Port = 12000
 
 datalink = {"T": [], 'R': [0, 0, 0, 0], 'F': [0, 0]}  # 初始化数据内容
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind((HOST, Port))
-addrdic = {'T': (HOST, 12001), 'R': (HOST, 12003), 'F': (HOST, 12002)}
+s.bind((HOST_S, Port))
+addrdic = {'T': (HOST_C, 12001), 'R': (HOST_C, 12003), 'F': (HOST_C, 12002)}
 
 
 def cmdsend(dst: str, cmddata: str):
@@ -38,7 +39,7 @@ def cmdsend(dst: str, cmddata: str):
             raise KeyboardInterrupt
     else:
         pass
-    print('send successful')
+    print('send {} to {}'.format(cmddata, addrdic[dst]))
 
 def socketget(gui):
     # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -49,12 +50,13 @@ def socketget(gui):
         while(True):
             try:
                 data, addr = s.recvfrom(65536)
+
             except Exception:
                 continue
             print("receive data from addr:{}".format(addr))
             # 更新目的地址
+            addrdic[data[0:1].decode()] = addr
             if len(data) == 1:
-                addrdic[data[0:1].decode()] = addr
                 continue
             get, pere = PB.Total_decode(data, datalink)
 

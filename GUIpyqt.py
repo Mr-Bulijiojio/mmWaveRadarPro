@@ -32,6 +32,7 @@ class MainUi(QtWidgets.QMainWindow):
     output_breath = [0 for i in range(0, length) ]
     output_heart=[0 for j in range(0, length) ]
     poss=0
+    FH = False
     # item=[]
     textforfall=['跌倒检测：\n']+['' for _ in range(9)]
     def __init__(self, datalink, sendcmdfun):
@@ -41,8 +42,6 @@ class MainUi(QtWidgets.QMainWindow):
         self.sendcmd = sendcmdfun
 
         self.init_ui()
-        # self.refresh(True, True, True)
-        # self.refresh(True, True, True)
 
     def init_ui(self):
         self.setWindowTitle(self.title)
@@ -92,8 +91,8 @@ class MainUi(QtWidgets.QMainWindow):
 
         plot_Rate_breath = pg.PlotWidget()
         plot_Rate_heart = pg.PlotWidget()
-        plot_Rate_heart.setYRange(max = 2.5 ,min = -2.5)
-        plot_Rate_breath.setYRange(max = 2.5 ,min = -2.5)
+        plot_Rate_heart.setYRange(max = 2.5, min= -2.5)
+        plot_Rate_breath.setYRange(max = 2.5, min= -2.5)
 
         plot_Track, Trackdata = self._init_track()
 
@@ -106,6 +105,8 @@ class MainUi(QtWidgets.QMainWindow):
         btn4 = QtWidgets.QPushButton('FT down')
         btn4.clicked.connect(lambda: self.sendcmd('F', 'Close'))
 
+        btn5 = QtWidgets.QPushButton("Fall Hide")
+        btn5.clicked.connect(lambda: self.FH_XOR())
 
         #布局
         self.left_layout.addWidget(self.lb1, 0, 0, 1, 2)
@@ -128,12 +129,13 @@ class MainUi(QtWidgets.QMainWindow):
         self.right_layout.setRowStretch(2, 5)
         self.right_layout.setRowStretch(11,0)
 
-        self.control_layout.addWidget(self.lb4,0,0,1,2)
-        self.control_layout.addWidget(self.lb5,0,2,1,2)
+        self.control_layout.addWidget(self.lb4, 0, 0, 1, 2)
+        self.control_layout.addWidget(self.lb5, 0, 2, 1, 2)
         self.control_layout.addWidget(btn1, 1, 0)
         self.control_layout.addWidget(btn2, 1, 1)
         self.control_layout.addWidget(btn3, 1, 2)
         self.control_layout.addWidget(btn4, 1, 3)
+        self.control_layout.addWidget(btn5, 2, 2)
         self.right_layout.setRowStretch(0, 1)
         self.right_layout.setRowStretch(1, 1)
 
@@ -147,6 +149,9 @@ class MainUi(QtWidgets.QMainWindow):
         self.plot_Track = plot_Track
         self.plot_Track_data = Trackdata
         self.plot_Track_count = 0
+
+    def FH_XOR(self):
+        self.FH = not self.FH
 
     def resizeEvent(self, a0: QtGui.QResizeEvent):
         #缩放窗口事件！
@@ -231,6 +236,8 @@ class MainUi(QtWidgets.QMainWindow):
                                          pen='y', symbol=None, symbolBrush='g')
             self.poss =(self.poss + 1) % self.length
         if F:
+            if self.FH == True:
+                return
             stat = self.datadic['F'][0]
             weight = self.datadic['F'][1]
             # weight = self.txt.blockCount()

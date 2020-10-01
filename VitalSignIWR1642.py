@@ -40,7 +40,7 @@ class TwoRate(threading.Thread):
         self.socket_Rate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_Rate.bind(self.addr_2Rate)
         self.socket_Rate.setblocking(False)
-        self.socket_Rate.sendto(b'R',addr_server)
+        # self.socket_Rate.sendto(b'R',addr_server)
         self.system = system
 
         self.start_conf = [configFileName, CLIPortID, DataPortID]
@@ -354,20 +354,14 @@ class TwoRate(threading.Thread):
 
         return dataOK, frameNumber, vitalsign
 
-    def update(self):
+    def update(self,vitalsign):
 
         # Read and parse the received data
-        dataOk, frameNumber, vitalsign = self.readAndParseData(self.Dataport, self.configParameters)
-        self.test_count_try+=1
-        if dataOk:
-            self.test_count_dataok+=1
-            sendbin = PB.Rate_encode(vitalsign)
-            # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            #     s.bind(self.addr_2Rate)
-            self.socket_Rate.sendto(sendbin, self.addr_server)
+        sendbin = PB.Rate_encode(vitalsign)
+
+        self.socket_Rate.sendto(sendbin, self.addr_server)
         self.breathOK = True
 
-        return dataOk
 
     def __del__(self):
         self._auto_close()
@@ -383,7 +377,8 @@ class TwoRate(threading.Thread):
                 # try to get instruction from server
                 try:
                     cmddata_track, addr = self.socket_Rate.recvfrom(1500)
-                    assert addr == self.addr_server
+                    if addr != self.addr_server:
+                        print("rcv cmd from unknown addr:{}".format(addr))
                 except Exception:
                     pass
                 else:
@@ -391,9 +386,15 @@ class TwoRate(threading.Thread):
                 # Update the data and check if the data is okay
                 if self.ComportOK == False:
                     continue
-                if self.breathOK == True:
-                    self.breathOK = False
-                    self.update()
+                dataOk, frameNumber, vitalsign = self.readAndParseData(self.Dataport, self.configParameters)
+                self.test_count_try += 1
+                if dataOk:
+                    self.test_count_dataok += 1
+                    if self.breathOK:
+                        self.breathOK = False
+                        tmp_thread_rate = threading.Thread(target=self.update, daemon=True,
+                                                           args=(vitalsign,))
+                        tmp_thread_rate.start()
 
                 time.sleep(0.04)
 

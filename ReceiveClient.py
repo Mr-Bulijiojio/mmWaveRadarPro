@@ -17,7 +17,8 @@ import GUIpyqt
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import threading
-
+import logging
+import os
 
 HOST_S = '192.168.137.1'
 HOST_C = '192.168.137.88'
@@ -28,7 +29,35 @@ datalink = {"T": [], 'R': [0, 0, 0, 0], 'F': [0, 0]}  # 初始化数据内容
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind((HOST_S, Port))
 addrdic = {'T': (HOST_C, 12001), 'R': (HOST_C, 12003), 'F': (HOST_C, 12002)}
+absaddr = os.path.abspath(os.path.dirname(__file__))
 
+dellist = os.listdir(os.path.join(absaddr, "logger"))
+for i in dellist:
+    filepath = os.path.join(absaddr, 'logger', i)
+    assert os.path.isfile(filepath)
+    os.remove(filepath)
+
+MyFormatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+Handler_GUI_Debug = logging.FileHandler(os.path.join(absaddr, "logger", "GUI_debug.log"))
+Handler_GUI_Debug.setLevel(logging.DEBUG)
+Handler_GUI_Debug.setFormatter(MyFormatter)
+Handler_GUI_warning = logging.FileHandler(os.path.join(absaddr, "logger", "GUI_info.log"))
+Handler_GUI_warning.setLevel(logging.WARNING)
+Handler_GUI_warning.setFormatter(MyFormatter)
+
+logger_GUI = logging.getLogger(__name__+'.gui')
+logger_GUI.setLevel(level=logging.DEBUG)
+logger_GUI.addHandler(Handler_GUI_Debug)
+logger_GUI.addHandler(Handler_GUI_warning)
+
+Handler_rcv = logging.FileHandler(os.path.join(absaddr, "logger", "Rcv_info.log"))
+Handler_rcv.setLevel(logging.DEBUG)
+Handler_rcv.setFormatter(MyFormatter)
+
+logger_rcv = logging.getLogger(__name__)
+logger_rcv.setLevel(level=logging.DEBUG)
+logger_rcv.addHandler(Handler_rcv)
 
 def cmdsend(dst: str, cmddata: str):
     if dst == "T" or dst == 'R' or dst == 'F':
@@ -40,12 +69,14 @@ def cmdsend(dst: str, cmddata: str):
     else:
         pass
     print('send {} to {}'.format(cmddata, addrdic[dst]))
+    logger_rcv.info('send {} to {}'.format(cmddata, addrdic[dst]))
 
 def socketget(gui):
     # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         # s.setblocking(False)
     try:
         print("ready to get data")
+        logger_GUI.info("ready to get data")
         s.setblocking(False)
         while(True):
             try:
@@ -53,25 +84,22 @@ def socketget(gui):
 
             except Exception:
                 continue
-            print("receive data from addr:{}".format(addr))
             # 更新目的地址
             addrdic[data[0:1].decode()] = addr
             if len(data) == 1:
                 continue
             get, pere = PB.Total_decode(data, datalink)
+            logger_rcv.debug("receive data from addr:{}  len of rcv: {} {} ".format(addr, len(data), get))
 
-            print(get)
-            print("len of rcv: {}".format(len(data)))
-            print("*******************************************************")
             gui.refresh(*pere)
     except KeyboardInterrupt:
-        print('stop to get data')
+        logger_rcv.info('stop to get data')
         s.close()
 
 
 app = QtWidgets.QApplication(sys.argv)
 
-gui = GUIpyqt.MainUi(datalink, cmdsend)
+gui = GUIpyqt.MainUi(datalink, cmdsend, logger_GUI)
 gui.show()
 threads = threading.Thread(target=socketget, args=(gui,))
 

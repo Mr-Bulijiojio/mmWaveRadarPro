@@ -13,18 +13,10 @@
 __author__ = 'Kinddle'
 
 import serial
-# import time
-# import numpy as np
-# import pyqtgraph as pg
-# from pyqtgraph.Qt import QtGui
-# import pyqtgraph.opengl as gl
 from IWR.MOT3D import *
 import numpy
 from sklearn.cluster import dbscan
 import pandas
-#
-# import MLP.MLP_forward as MLP_forward
-# import MLP.MLP_backward as MLP_backward
 from MLP.MLP_app import *
 import tensorflow as tf
 import ProtocolBase as PB
@@ -32,7 +24,7 @@ import ProtocolBase as PB
 import os
 import threading
 import socket
-
+import logging
 
 
 class TrackandFall(threading.Thread):
@@ -40,8 +32,9 @@ class TrackandFall(threading.Thread):
     test_count_dataok = 0
     test_count_fallok = 0
     test_count_trackok = 0
+
     def __init__(self, addr_track=("127.0.0.1", 12001), addr_fall=("127.0.0.1", 12002), addr_server=("127.0.0.1", 12000),
-                 CLIPortID=4, DataPortID=5, system="Linux",
+                 CLIPortID=4, DataPortID=5, system="Linux", logger=logging,
                  configFileName='profile_iwr6843_ods_3d.cfg'):
         super().__init__(daemon=True)
         self.CLIport=None
@@ -54,6 +47,7 @@ class TrackandFall(threading.Thread):
         self.frameData = np.array([0, 0, 0])
         self.system = system
         self.track_zero_flag = True
+        self.logger = logger
         # 线程控制相关
         self.ComportOK = False
         self.fallOK = True
@@ -76,18 +70,6 @@ class TrackandFall(threading.Thread):
 
         self._auto_start(*self.start_conf)
 
-        # if system != "Linux" and system != "Windows":
-        #     raise SystemExit("only support Linux and Windows Com")
-        # self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
-        #
-        # try:
-        #     self.parseConfigFile(configFileName)
-        # except Exception as err:
-        #     print("something wrong in config file please check '{}'".format(configFileName))
-        #     print("There is the error report:\n{}\n****************************".format(err))
-        #     return
-        # print("open TrackModule module successfully")
-
     def _auto_start(self, configFileName, CLIPortID, DataPortID):
         system = self.system
         if system != "Linux" and system != "Windows":
@@ -95,15 +77,19 @@ class TrackandFall(threading.Thread):
         try:
             self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
         except Exception as err:
-            print('open Com Fail...')
-            print('There is the error report:\n{}\n****************************'.format(err))
+            self.logger.error("Open Com Fail...\nThere is the error report:\n{}\n*********************************".format(err))
+            # print('open Com Fail...')
+            # print('There is the error report:\n{}\n****************************'.format(err))
             return
         try:
             self.parseConfigFile(configFileName)
         except Exception as err:
-            print("something wrong in config file please check '{}'".format(configFileName))
-            print("There is the error report:\n{}\n****************************".format(err))
+            self.logger.error("something wrong in config file please check '{}'\nThere is the error report:\n{}\n"
+                              "*********************************".format(configFileName, err))
+            # print("something wrong in config file please check '{}'".format(configFileName))
+            # print("There is the error report:\n{}\n****************************".format(err))
             return
+        self.logger.info("Open TrackModule module successfully")
         print("Open TrackModule module successfully")
         self.ComportOK = True
 
@@ -118,10 +104,6 @@ class TrackandFall(threading.Thread):
 
 
     def serialConfig(self, configFileName, CPID, DPID, system="Linux"):
-        # global CLIport
-        # global Dataport
-        # # Open the serial ports for the configuration and the data ports
-
         # Raspberry Linux
         if system == "Linux":
             self.CLIport = serial.Serial('/dev/My_Serial%d' % CPID, 115200)
@@ -136,11 +118,8 @@ class TrackandFall(threading.Thread):
         config = [line.rstrip('\r\n') for line in open(configFileName)]
         for i in config:
             print(i)
-            # if i[0] != '%':
             self.CLIport.write((i + '\n').encode())
             time.sleep(0.1)
-
-        # return self.CLIport, self.Dataport
 
     def parseConfigFile(self, configFileName):
         configParameters = {}  # Initialize an empty dictionary to store the configuration parameters
@@ -387,21 +366,13 @@ class TrackandFall(threading.Thread):
                         testData[0][j] = 1e-8
                 y_out = sess.run(sessy, feed_dict={sessx: testData})
                 if y_out[0] < 0.05:
-                    # print("\033[1;31;40m摔倒{}".format(y_out[0]))
                     senddata=2
                 elif y_out[0] < 0.2 and y_out[0] > 0.05:
-                    # print("\033[0;32;46m坐下或慢蹲{}".format(y_out[0]))
                     senddata=1
                 else:
-                    # print("\033[0;32;46m无事发生{}".format(y_out[0]))
                     senddata=0
-                # print(y_out)
                 self.step = 0
                 sendbin = PB.Fall_encode(senddata, max(y_out[0]))
-                # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM)as s:
-                #     #print('len of send' + str(len(sendbin)))
-                #
-                #     s.bind(self.addr_fall)
                 self.socket_Fall.sendto(sendbin, self.addr_server)
             self.frameData = np.delete(self.frameData, 0, axis=0)
 
@@ -411,12 +382,12 @@ class TrackandFall(threading.Thread):
         self._auto_close()
         self.socket_Fall.close()
         self.socket_Track.close()
-        print("try:{}\ndataok:{}\ntrackok:{}\nfallok:{}\n".format(self.test_count_try, self.test_count_dataok, self.test_count_trackok, self.test_count_fallok))
+        self.logger.info("try:{}\ndataok:{}\ntrackok:{}\nfallok:{}"
+                         "\n".format(self.test_count_try, self.test_count_dataok,
+                                     self.test_count_trackok, self.test_count_fallok))
 
     # ------------------------------main----------------------------
     def run(self):
-        # frameData = {}
-        # currentIndex = 0
         with tf.Graph().as_default() as tg:
             sessx = tf.placeholder(tf.float32, [None, MLP_forward.INPUT_NODE])
             sessy = MLP_forward.forward(sessx, None)
@@ -428,7 +399,7 @@ class TrackandFall(threading.Thread):
             with tf.Session() as sess:
                 abspath=os.path.abspath(os.path.dirname(__file__))
                 checkpoint = abspath + ('/model' if self.system == "Linux" else r'\model')
-                print(checkpoint)
+                # print(checkpoint)
                 ckpt = tf.train.get_checkpoint_state(checkpoint if True else
                                                      "/home/ai-box/Desktop/mmWaveRadar/Data/model")
                                                         # MLP.MLP_backward.MODEL_SAVE_PATH
@@ -500,8 +471,6 @@ class TrackandFall(threading.Thread):
                                     tmp_thread_track = threading.Thread(target=self.update_Track, daemon=True,
                                                                         args=(Z_k,))
                                     tmp_thread_track.start()
-                                    # self.update_Track(Z_k)
-                            # self.update(sess, x, y)
 
                             time.sleep(0.01)
                         # Stop the program and close everything if Ctrl + c is pressed
@@ -510,7 +479,8 @@ class TrackandFall(threading.Thread):
                             break
 
                 else:
-                    print("No checkpoint file found")
+                    # print("No checkpoint file found")
+                    self.logger.error("No checkpoint file found")
 
 
 if __name__ == "__main__":

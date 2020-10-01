@@ -22,6 +22,8 @@ import numpy as np
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtCore import Qt
+import logging
+
 
 class MainUi(QtWidgets.QMainWindow):
     left = 100
@@ -35,7 +37,8 @@ class MainUi(QtWidgets.QMainWindow):
     FH = False
     # item=[]
     textforfall=['跌倒检测：\n']+['' for _ in range(9)]
-    def __init__(self, datalink, sendcmdfun):
+
+    def __init__(self, datalink, sendcmdfun, logger=logging):
         super().__init__()
         self.datadic = datalink
         self.title = 'Contoller'
@@ -55,6 +58,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.left_layout = QtWidgets.QGridLayout()  # 创建左侧部件的网格布局层
         self.left_widget.setLayout(self.left_layout)  # 设置左侧部件布局为网格
         self.left_widget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+        # self.left_widget.setFixedWidth(int(self.width/3))
         # self.left_widget.(0, 100, 300, self.height)
 
         self.right_widget = QtWidgets.QWidget()  # 创建右侧部件
@@ -82,7 +86,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.lb5 = QtWidgets.QLabel('航迹跌倒雷达：')
         self.lb6 = QtWidgets.QLabel('目标检测与跟踪')
         self.txt = QtWidgets.QLabel('')
-        self.txt.setFixedWidth(int(self.width*1/3))
+        # self.txt.setFixedWidth(int(self.width*1/3))
         self.txt.setAutoFillBackground(True)
         palette = QPalette()
         palette.setColor(QPalette.Window, Qt.white)
@@ -113,7 +117,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.left_layout.addWidget(plot_Rate_breath, 1, 0, 3, 2)
         self.left_layout.addWidget(self.lb2, 4, 0, 1, 2)
         self.left_layout.addWidget(plot_Rate_heart, 5, 0, 3, 2)
-        self.left_layout.addWidget(self.lb3, 8, 0 ,1, 2)
+        self.left_layout.addWidget(self.lb3, 8, 0, 1, 2)
         self.left_layout.addWidget(self.txt, 9, 0, 4, 2)
         self.left_layout.setRowStretch(0, 1)
         self.left_layout.setRowStretch(1, 4)
@@ -127,7 +131,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.right_layout.addWidget(self.control_widget, 11, 0, 1, 6)
         self.right_layout.setRowStretch(1, 0)
         self.right_layout.setRowStretch(2, 5)
-        self.right_layout.setRowStretch(11,0)
+        self.right_layout.setRowStretch(11, 0)
 
         self.control_layout.addWidget(self.lb4, 0, 0, 1, 2)
         self.control_layout.addWidget(self.lb5, 0, 2, 1, 2)
@@ -156,9 +160,11 @@ class MainUi(QtWidgets.QMainWindow):
     def resizeEvent(self, a0: QtGui.QResizeEvent):
         #缩放窗口事件！
         new_width = max(int(a0.size().width() * 2/3), 300)
+        # self.right_widget.setFixedWidth(new_width)
         self.plot_Track.setFixedWidth(new_width)
 
-        self.txt.setFixedWidth(int(self.width*1/3))
+        # self.txt.setFixedWidth(new_width/2-1)
+        # self.left_widget.setFixedWidth(new_width/2-1)
 
     def _init_track(self):
         w = gl.GLViewWidget()
@@ -193,7 +199,7 @@ class MainUi(QtWidgets.QMainWindow):
         w.addItem(ggy)
         w.addItem(ggz)
 
-        plt = [gl.GLLinePlotItem(color = pg.glColor(235, (5+ i*49)%255, 66, 200), width = 4) for i in range(100)]
+        plt = [gl.GLLinePlotItem(color = pg.glColor(0, (206+ i*49)%255, 255, 200), width = 4) for i in range(20)]
         for i in plt:
             w.addItem(i)
 
@@ -241,7 +247,7 @@ class MainUi(QtWidgets.QMainWindow):
             stat = self.datadic['F'][0]
             weight = self.datadic['F'][1]
             # weight = self.txt.blockCount()
-            txt_insert = ('平静' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！' if stat == 2 else "未知数据")\
+            txt_insert = ('平静      ' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！  ' if stat == 2 else "未知数据")\
                         + ' 跌倒概率：%.2f' % (1-weight)
 
             self.textforfall.pop(1)

@@ -9,20 +9,17 @@ import serial
 import time
 import numpy as np
 import struct
-# import pyqtgraph as pg
-# from pyqtgraph.Qt import QtGui
-# from sklearn.cluster import dbscan
-# import pandas
 import ProtocolBase as PB
-
+import logging
 import threading
 import socket
 
 class TwoRate(threading.Thread):
     test_count_dataok = 0
     test_count_try = 0
+
     def __init__(self, addr_2Rate=("127.0.0.1", 12003), addr_server=("127.0.0.1", 12000),
-                 CLIPortID=10, DataPortID=9, system="Linux",
+                 CLIPortID=10, DataPortID=9, system="Linux", logger=logging,
                  configFileName='xwr1642_profile_VitalSigns_20fps_Front.cfg'):
         super().__init__(daemon=True)
         self.CLIport = None
@@ -33,6 +30,7 @@ class TwoRate(threading.Thread):
         self.Heartbeatsignal = list(range(0, 250))
         self.configParameters = {}
         self.detObj = {}
+        self.logger = logger
         self.breathOK = True
         self.ComportOK = False
         self.addr_2Rate = addr_2Rate
@@ -46,17 +44,6 @@ class TwoRate(threading.Thread):
         self.start_conf = [configFileName, CLIPortID, DataPortID]
         self._auto_start(*self.start_conf)
 
-        # self.system = system
-        # if system != "Linux" and system != "Windows":
-        #     raise SystemExit("only support Linux and Windows Com")
-        # self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
-        # try:
-        #     self.parseConfigFile(configFileName)
-        # except Exception as err:
-        #     print("something wrong in config file please check '{}'".format(configFileName))
-        #     print("There is the error report:\n{}\n****************************".format(err))
-        #     return
-        # print("open TwoRate module success")
     def _auto_start(self, configFileName, CLIPortID, DataPortID):
         system = self.system
         if system != "Linux" and system != "Windows":
@@ -65,16 +52,20 @@ class TwoRate(threading.Thread):
         try:
             self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
         except Exception as err:
-            print('open Com Fail...')
-            print('There is the error report:\n{}\n****************************'.format(err))
+            self.logger.error("Open Com Fail...\nThere is the error report:\n{}\n*********************************".format(err))
+            # print('open Com Fail...')
+            # print('There is the error report:\n{}\n****************************'.format(err))
             return
         try:
             self.parseConfigFile(configFileName)
         except Exception as err:
-            print("something wrong in config file please check '{}'".format(configFileName))
-            print("There is the error report:\n{}\n****************************".format(err))
+            self.logger.error("something wrong in config file please check '{}'\nThere is the error report:\n{}\n"
+                              "*********************************".format(configFileName, err))
+            # print("something wrong in config file please check '{}'".format(configFileName))
+            # print("There is the error report:\n{}\n****************************".format(err))
             return
-        print("Open VitalSign module successfully")
+        self.logger.info("Open TrackModule module successfully")
+        # print("Open VitalSign module successfully")
         self.ComportOK = True
 
     def _auto_close(self):
@@ -87,10 +78,6 @@ class TwoRate(threading.Thread):
         self.ComportOK = False
 
     def serialConfig(self, configFileName, CPID, DPID, system="Linux"):
-        # global CLIport
-        # global Dataport
-        # # Open the serial ports for the configuration and the data ports
-
         # Raspberry Linux
         if system == "Linux":
             self.CLIport = serial.Serial('/dev/My_Serial%d' % CPID, 115200)
@@ -108,8 +95,6 @@ class TwoRate(threading.Thread):
             # if i[0] != '%':
             self.CLIport.write((i + '\n').encode())
             time.sleep(1)
-
-        # return self.CLIport, self.Dataport
 
     def parseConfigFile(self, configFileName):
         configParameters = {}  # Initialize an empty dictionary to store the configuration parameters
@@ -360,13 +345,13 @@ class TwoRate(threading.Thread):
         sendbin = PB.Rate_encode(vitalsign)
 
         self.socket_Rate.sendto(sendbin, self.addr_server)
+        self.logger.debug("send a frame{}".format(str(sendbin)))
         self.breathOK = True
-
 
     def __del__(self):
         self._auto_close()
         self.socket_Rate.close()
-        print("dataok:{}\ntry:{}\n".format(self.test_count_dataok, self.test_count_try))
+        self.logger.info("dataok:{}\ntry:{}\n".format(self.test_count_dataok, self.test_count_try))
 
     def run(self):
         self.detObj = {}

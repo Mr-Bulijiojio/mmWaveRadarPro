@@ -428,8 +428,13 @@ class TrackandFall(threading.Thread):
                                 self.ParseCmdFrame(cmddata_track, self.socket_Track)
                             # Update the data and check if the data is okay
                             if self.ComportOK == False:
+                                time.sleep(0.1)
                                 continue
-                            dataOk, frameNumber, detObj = self.readAndParseData(self.Dataport, self.configParameters)
+                            try:
+                                dataOk, frameNumber, detObj = self.readAndParseData(self.Dataport, self.configParameters)
+                            except Exception as Z:
+                                self.logger.error("parsedata:{}".format(Z))
+                                continue
                             self.test_count_try+=1
                             if dataOk:
                                 self.test_count_dataok +=1

@@ -53,8 +53,6 @@ class TwoRate(threading.Thread):
             self.serialConfig(configFileName, CLIPortID, DataPortID, system)  # Open the serial ports
         except Exception as err:
             self.logger.error("Open Com Fail...\nThere is the error report:\n{}\n*********************************".format(err))
-            # print('open Com Fail...')
-            # print('There is the error report:\n{}\n****************************'.format(err))
             return
         try:
             self.parseConfigFile(configFileName)
@@ -64,9 +62,14 @@ class TwoRate(threading.Thread):
             # print("something wrong in config file please check '{}'".format(configFileName))
             # print("There is the error report:\n{}\n****************************".format(err))
             return
+        else:
+            self.logger.info("Com open success")
         self.logger.info("Open TrackModule module successfully")
         # print("Open VitalSign module successfully")
         self.ComportOK = True
+        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
+        self.byteBufferLength = 0
+        self.logger.debug("breathOK:{} ComportOK:{}".format(self.breathOK,self.ComportOK))
 
     def _auto_close(self):
         if self.CLIport:
@@ -92,9 +95,12 @@ class TwoRate(threading.Thread):
         config = [line.rstrip('\r\n') for line in open(configFileName)]
         for i in config:
             print(i)
+            self.logger.debug("Comsend:\n{}".format(str(i)))
             # if i[0] != '%':
             self.CLIport.write((i + '\n').encode())
             time.sleep(1)
+        print("serial config finish")
+        self.logger.info("serial config finish")
 
     def parseConfigFile(self, configFileName):
         configParameters = {}  # Initialize an empty dictionary to store the configuration parameters
@@ -170,6 +176,7 @@ class TwoRate(threading.Thread):
                 self._auto_start(*self.start_conf)
         else:
             print('unknown cmd...')
+            self.logger.warning("unknown cmd...")
 
     def readAndParseData(self, Dataport, configParameters):
         # global byteBuffer, byteBufferLength
@@ -190,8 +197,9 @@ class TwoRate(threading.Thread):
         dataOK = 0  # Checks if the data has been read correctly
         frameNumber = 0
         vitalsign = {}
-
+        # self.logger.debug("reading data")
         readBuffer = Dataport.read(Dataport.in_waiting)
+        # self.logger.debug("read data")
         byteVec = np.frombuffer(readBuffer, dtype='uint8')
         byteCount = len(byteVec)
 
@@ -201,6 +209,7 @@ class TwoRate(threading.Thread):
             self.byteBufferLength = self.byteBufferLength + byteCount
 
         # Check that the buffer has some data
+        # self.logger.debug("byteBUfferlength>16?")
         if self.byteBufferLength > 16:
 
             # Check for all possible locations of the magic word
@@ -214,6 +223,8 @@ class TwoRate(threading.Thread):
                     startIdx.append(loc)
 
             # Check that startIdx is not empty
+
+            # self.logger.debug("startIdX?")
             if startIdx:
 
                 # Remove the data before the first start index
@@ -238,8 +249,12 @@ class TwoRate(threading.Thread):
                     magicOK = 1
 
         # If magicOK is equal to 1 then process the message
-        if magicOK:
 
+
+        if magicOK:
+            # self.logger.debug("magicOK?{}\n totalPacketLen{}\n"
+            #                   "byteBuffer{}".format(magicOK, totalPacketLen,
+            #                                         self.byteBuffer[0:max(self.byteBufferLength, 0)]))
             # Initialize the pointer index
             idX = 0
 
@@ -264,6 +279,10 @@ class TwoRate(threading.Thread):
             idX += 4
 
             # Read the TLV messages
+            self.logger.debug("numTLVS:{}".format(numTLVs))
+            if numTLVs>2:
+                numTLVs =2
+                self.logger.warning("numTLVs Error! value:{}".format(numTLVs))
             for tlvIdx in range(numTLVs):
 
                 # Check the header of the TLV message
@@ -325,6 +344,8 @@ class TwoRate(threading.Thread):
                     dataOK = 1
 
             # Remove already processed data
+
+            # self.logger.debug("shift!")
             if 0 < idX < self.byteBufferLength:
                 shiftSize = totalPacketLen
 
@@ -335,8 +356,12 @@ class TwoRate(threading.Thread):
 
                 # Check that there are no errors with the buffer length
                 if self.byteBufferLength < 0:
+                    self.logger.warning("byteBufferLength<0")
                     self.byteBufferLength = 0
 
+            # self.logger.debug("shift finish")
+
+        # self.logger.debug("return parse")
         return dataOK, frameNumber, vitalsign
 
     def update(self,vitalsign):
@@ -345,7 +370,7 @@ class TwoRate(threading.Thread):
         sendbin = PB.Rate_encode(vitalsign)
 
         self.socket_Rate.sendto(sendbin, self.addr_server)
-        self.logger.debug("send a frame{}".format(str(sendbin)))
+        self.logger.debug("send a frame:\n{}".format(str(sendbin)))
         self.breathOK = True
 
     def __del__(self):
@@ -361,33 +386,48 @@ class TwoRate(threading.Thread):
             try:
                 # try to get instruction from server
                 try:
+                    # self.logger.debug("intorcvcmddata".format())
                     cmddata_track, addr = self.socket_Rate.recvfrom(1500)
                     if addr != self.addr_server:
                         print("rcv cmd from unknown addr:{}".format(addr))
+                        self.logger.warning("rcv cmd from unknown addr".format())
+                    # self.logger.debug("get a cmdframe:\n{}".format(str(cmddata_track)))
                 except Exception:
                     pass
                 else:
                     self.ParseCmdFrame(cmddata_track, self.socket_Rate)
                 # Update the data and check if the data is okay
+                #     self.logger.debug("ComportOK?".format())
                 if self.ComportOK == False:
+                    # self.logger.debug("ComportOK?".format())
+                    time.sleep(0.1)
                     continue
-                dataOk, frameNumber, vitalsign = self.readAndParseData(self.Dataport, self.configParameters)
+                # self.logger.debug("parsedata??".format())
+                try:
+                    dataOk, frameNumber, vitalsign = self.readAndParseData(self.Dataport, self.configParameters)
+                except Exception as Z:
+                    self.logger.error("parsedataerr:{}".format(Z))
+                    raise KeyboardInterrupt
+                    continue
                 self.test_count_try += 1
+                # self.logger.debug("dataOK?".format())
                 if dataOk:
                     self.test_count_dataok += 1
+                    # self.logger.debug("breathOK?".format())
                     if self.breathOK:
                         self.breathOK = False
                         tmp_thread_rate = threading.Thread(target=self.update, daemon=True,
                                                            args=(vitalsign,))
                         tmp_thread_rate.start()
 
-                time.sleep(0.04)
+                time.sleep(0.01)
 
             # Stop the program and close everything if Ctrl + c is pressed
             except KeyboardInterrupt:
                 self._auto_close()
                 break
 
+        self.logger.debug("out of while...")
 if __name__ == "__main__":
     tst = TwoRate(CLIPortID=10 , DataPortID=9 ,system='Windows')
     tst.run()

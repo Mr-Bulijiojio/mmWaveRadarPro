@@ -228,7 +228,7 @@ class MainUi(QtWidgets.QMainWindow):
         if R:
             self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
             self.lb2.setText('心率:%d' % self.datadic['R'][3])
-
+            QtWidgets.QApplication.processEvents()
             self.output_breath[self.poss] = self.datadic['R'][0]
             # self.output_breath=self.output_breath[1:]
             # self.output_breath.append(self.datadic['R'][0])

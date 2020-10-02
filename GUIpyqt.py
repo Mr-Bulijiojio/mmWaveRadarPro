@@ -147,8 +147,11 @@ class MainUi(QtWidgets.QMainWindow):
         # plot_Rate_heart.setYRange(max=1, min=0)
         # plot_Rate_breath.setYRange(max=1, min=0)
         # self.plot_Track = plot_Track.plot([0])
-        self.plot_Rate_breath = plot_Rate_breath.plot()
-        self.plot_Rate_heart = plot_Rate_heart.plot()
+        self.plot_Rate_breath = plot_Rate_breath.plot(pen='g', symbol=None)
+        self.plot_Rate_heart = plot_Rate_heart.plot( pen='y', symbol=None)
+
+        self.plot_Rate_breath_point = plot_Rate_breath.plot(pen=None, symbol="o", symbolBrush=(255, 255, 255), symbolPen=(255,255,255))
+        self.plot_Rate_heart_point = plot_Rate_heart.plot(pen=None, symbol="o", symbolBrush=(255,255,255), symbolPen=(255,255,255))
 
         self.plot_Track = plot_Track
         self.plot_Track_data = Trackdata
@@ -232,14 +235,14 @@ class MainUi(QtWidgets.QMainWindow):
             self.output_breath[self.poss] = self.datadic['R'][0]
             # self.output_breath=self.output_breath[1:]
             # self.output_breath.append(self.datadic['R'][0])
-            self.plot_Rate_breath.setData(self.output_breath,
-                                          pen='g', symbol=None, symbolBrush='g')
+            self.plot_Rate_breath.setData(self.output_breath)
+            self.plot_Rate_breath_point.setData([self.poss], [self.datadic['R'][0]])
 
             self.output_heart[self.poss] = self.datadic['R'][1]
             # self.output_heart=self.output_heart[1:]
             # self.output_heart.append(self.datadic['R'][1])
-            self.plot_Rate_heart.setData(self.output_heart,
-                                         pen='y', symbol=None, symbolBrush='g')
+            self.plot_Rate_heart.setData(self.output_heart)
+            self.plot_Rate_heart_point.setData([self.poss], [self.datadic['R'][1]])
             self.poss =(self.poss + 1) % self.length
         if F:
             if self.FH == True:

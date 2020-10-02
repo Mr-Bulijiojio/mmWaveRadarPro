@@ -252,9 +252,9 @@ class TwoRate(threading.Thread):
 
 
         if magicOK:
-            # self.logger.debug("magicOK?{}\n totalPacketLen{}\n"
-            #                   "byteBuffer{}".format(magicOK, totalPacketLen,
-            #                                         self.byteBuffer[0:max(self.byteBufferLength, 0)]))
+            self.logger.debug("magicOK?{}\n totalPacketLen{}\nbyteBUfferlength{}\n"
+                              "byteBuffer{}".format(magicOK, totalPacketLen, self.byteBufferLength,
+                                                    self.byteBuffer[0:max(self.byteBufferLength, 0)]))
             # Initialize the pointer index
             idX = 0
 
@@ -280,9 +280,11 @@ class TwoRate(threading.Thread):
 
             # Read the TLV messages
             self.logger.debug("numTLVS:{}".format(numTLVs))
-            if numTLVs>2:
-                numTLVs =2
+            if numTLVs > 2:
+                numTLVs = 2
                 self.logger.warning("numTLVs Error! value:{}".format(numTLVs))
+                # tmplist = self.byteBuffer.tolist()
+                self.logger.warning("{}".format(self.byteBuffer))
             for tlvIdx in range(numTLVs):
 
                 # Check the header of the TLV message
@@ -395,6 +397,7 @@ class TwoRate(threading.Thread):
                 except Exception:
                     pass
                 else:
+                    self.logger.debug("ComportOK:{}breathOK:{}".format(self.ComportOK,self.breathOK))
                     self.ParseCmdFrame(cmddata_track, self.socket_Rate)
                 # Update the data and check if the data is okay
                 #     self.logger.debug("ComportOK?".format())

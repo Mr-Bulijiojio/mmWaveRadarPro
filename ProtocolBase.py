@@ -101,7 +101,7 @@ def Rate_decode(data):
 
 def IntToBytes(x:int, len:int=4):
     if not -2**(8*4-1)< x <2**(8*4-1):
-        x = 0
+        x = -2**(8*4-1) if x < 0 else 2**(8*4-1)
     return x.to_bytes(len, byteorder="little", signed=True)
 
 def BytesToInt(x:bytes):

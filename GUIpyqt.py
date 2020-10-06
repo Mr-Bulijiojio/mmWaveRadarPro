@@ -20,10 +20,11 @@ import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import numpy as np
 from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtWidgets import QSizePolicy, QFrame
 from PyQt5.QtCore import Qt
 import logging
-
+import re
+import winsound
 
 class MainUi(QtWidgets.QMainWindow):
     left = 100
@@ -34,7 +35,7 @@ class MainUi(QtWidgets.QMainWindow):
     output_breath = [0 for i in range(0, length) ]
     output_heart=[0 for j in range(0, length) ]
     poss=0
-    FH = False
+    FH = True
     # item=[]
     textforfall=['跌倒检测：\n']+['' for _ in range(9)]
 
@@ -43,7 +44,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.datadic = datalink
         self.title = 'Contoller'
         self.sendcmd = sendcmdfun
-
+        self.txtcolor_fall = False
         self.init_ui()
 
     def init_ui(self):
@@ -86,16 +87,22 @@ class MainUi(QtWidgets.QMainWindow):
         self.lb5 = QtWidgets.QLabel('航迹跌倒雷达：')
         self.lb6 = QtWidgets.QLabel('目标检测与跟踪')
         self.txt = QtWidgets.QLabel('')
-        # self.txt.setFixedWidth(int(self.width*1/3))
+        self.txt.setFrameShape(QFrame.Box)
+        self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
+                                'border-color: rgb(255, 170, 0);background-color: rgb(153,255,255);')
+        # self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
+        #                        'border-color: rgb(255, 170, 0);background-color: rgb(100,149,237);')
         self.txt.setAutoFillBackground(True)
-        palette = QPalette()
-        palette.setColor(QPalette.Window, Qt.white)
-        self.txt.setPalette(palette)
+        # palette = QPalette()
+        # palette.setColor(QPalette.Window, Qt.white)
+        # self.txt.setPalette(palette)
         # self.txt.setMaximumBlockCount(10)
 
         plot_Rate_breath = pg.PlotWidget()
         plot_Rate_heart = pg.PlotWidget()
+        plot_Rate_heart.setXRange(max=1.1*self.length, min=-0.1*self.length)
         plot_Rate_heart.setYRange(max = 2.5, min= -2.5)
+        plot_Rate_breath.setXRange(max=1.1*self.length, min=-0.1*self.length)
         plot_Rate_breath.setYRange(max = 2.5, min= -2.5)
 
         plot_Track, Trackdata = self._init_track()
@@ -109,8 +116,8 @@ class MainUi(QtWidgets.QMainWindow):
         btn4 = QtWidgets.QPushButton('FT down')
         btn4.clicked.connect(lambda: self.sendcmd('F', 'Close'))
 
-        btn5 = QtWidgets.QPushButton("Fall Hide")
-        btn5.clicked.connect(lambda: self.FH_XOR())
+        self.btn5 = QtWidgets.QPushButton("FD Start")
+        self.btn5.clicked.connect(lambda: self.FH_XOR())
 
         #布局
         self.left_layout.addWidget(self.lb1, 0, 0, 1, 2)
@@ -139,7 +146,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.control_layout.addWidget(btn2, 1, 1)
         self.control_layout.addWidget(btn3, 1, 2)
         self.control_layout.addWidget(btn4, 1, 3)
-        self.control_layout.addWidget(btn5, 2, 2)
+        self.control_layout.addWidget(self.btn5, 2, 2)
         self.right_layout.setRowStretch(0, 1)
         self.right_layout.setRowStretch(1, 1)
 
@@ -159,10 +166,11 @@ class MainUi(QtWidgets.QMainWindow):
 
     def FH_XOR(self):
         self.FH = not self.FH
+        self.btn5.setText("FD Start" if self.FH else "FD Close")
 
     def resizeEvent(self, a0: QtGui.QResizeEvent):
         #缩放窗口事件！
-        new_width = max(int(a0.size().width() * 2/3), 300)
+        new_width = max(int(a0.size().width() * 1/3), 150)
         # self.right_widget.setFixedWidth(new_width)
         self.plot_Track.setFixedWidth(new_width)
 
@@ -173,7 +181,7 @@ class MainUi(QtWidgets.QMainWindow):
         w = gl.GLViewWidget()
         w.opts['distance'] = 40
         # w.resize(600,600)
-        w.setFixedWidth(int(self.width * 2/3))
+        w.setFixedWidth(int(self.width * 1/3))
         w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         scale = 5
         #坐标系
@@ -251,11 +259,26 @@ class MainUi(QtWidgets.QMainWindow):
             weight = self.datadic['F'][1]
             # weight = self.txt.blockCount()
             txt_insert = ('平静      ' if stat==0 else '慢蹲或坐下' if stat == 1 else '跌倒！！  ' if stat == 2 else "未知数据")\
-                        + ' 跌倒概率：%.2f' % (1-weight)
-
+                        + (' 跌倒概率：%.2f' % (1-weight) if stat == 2 else "")
+            if stat == 2:
+                winsound.Beep(3000, 1000)
+            # self.txt.setFrameShape(QFrame.Box)
+            #
+            # self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
+            #                        'border-color: rgb(255, 170, 0);background-color: rgb(100,149,237);')
+            # self.txt.setAutoFillBackground(True)
             self.textforfall.pop(1)
             self.textforfall.append(txt_insert + '\n')
             txtnow=''.join(self.textforfall)
+            if re.search("跌倒！！", txtnow):
+                if not self.txtcolor_fall:
+                    self.txtcolor_fall = True
+                    self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
+                                           'border-color: rgb(255, 170, 0);background-color: rgb(255,0,102);')
+            elif self.txtcolor_fall:
+                self.txtcolor_fall = False
+                self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
+                                       'border-color: rgb(255, 170, 0);background-color: rgb(153,255,255);')
             self.txt.setText(txtnow)
 
 

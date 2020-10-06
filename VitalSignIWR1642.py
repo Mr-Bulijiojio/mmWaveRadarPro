@@ -197,10 +197,11 @@ class TwoRate(threading.Thread):
         dataOK = 0  # Checks if the data has been read correctly
         frameNumber = 0
         vitalsign = {}
-        # self.logger.debug("reading data")
+        self.logger.debug("reading data")
         readBuffer = Dataport.read(Dataport.in_waiting)
-        # self.logger.debug("read data")
+        self.logger.debug("read data")
         byteVec = np.frombuffer(readBuffer, dtype='uint8')
+        self.logger.debug("byteVec:{}".format(byteVec))
         byteCount = len(byteVec)
 
         # Check that the buffer is not full, and then add the data to the buffer
@@ -209,7 +210,7 @@ class TwoRate(threading.Thread):
             self.byteBufferLength = self.byteBufferLength + byteCount
 
         # Check that the buffer has some data
-        # self.logger.debug("byteBUfferlength>16?")
+        self.logger.debug("byteBUfferlength>16?{}".format(self.byteBufferLength))
         if self.byteBufferLength > 16:
 
             # Check for all possible locations of the magic word
@@ -224,7 +225,7 @@ class TwoRate(threading.Thread):
 
             # Check that startIdx is not empty
 
-            # self.logger.debug("startIdX?")
+            self.logger.debug("startIdX?")
             if startIdx:
 
                 # Remove the data before the first start index
@@ -388,24 +389,24 @@ class TwoRate(threading.Thread):
             try:
                 # try to get instruction from server
                 try:
-                    # self.logger.debug("intorcvcmddata".format())
+                    self.logger.debug("intorcvcmddata".format())
                     cmddata_track, addr = self.socket_Rate.recvfrom(1500)
                     if addr != self.addr_server:
                         print("rcv cmd from unknown addr:{}".format(addr))
                         self.logger.warning("rcv cmd from unknown addr".format())
-                    # self.logger.debug("get a cmdframe:\n{}".format(str(cmddata_track)))
+                    self.logger.debug("get a cmdframe:\n{}".format(str(cmddata_track)))
                 except Exception:
                     pass
                 else:
                     self.logger.debug("ComportOK:{}breathOK:{}".format(self.ComportOK,self.breathOK))
                     self.ParseCmdFrame(cmddata_track, self.socket_Rate)
                 # Update the data and check if the data is okay
-                #     self.logger.debug("ComportOK?".format())
+                    self.logger.debug("ComportOK?".format())
                 if self.ComportOK == False:
-                    # self.logger.debug("ComportOK?".format())
+                    self.logger.debug("ComportOK?".format())
                     time.sleep(0.1)
                     continue
-                # self.logger.debug("parsedata??".format())
+                self.logger.debug("parsedata??".format())
                 try:
                     dataOk, frameNumber, vitalsign = self.readAndParseData(self.Dataport, self.configParameters)
                 except Exception as Z:
@@ -413,10 +414,10 @@ class TwoRate(threading.Thread):
                     raise KeyboardInterrupt
                     continue
                 self.test_count_try += 1
-                # self.logger.debug("dataOK?".format())
+                self.logger.debug("dataOK?".format())
                 if dataOk:
                     self.test_count_dataok += 1
-                    # self.logger.debug("breathOK?".format())
+                    self.logger.debug("breathOK?".format())
                     if self.breathOK:
                         self.breathOK = False
                         tmp_thread_rate = threading.Thread(target=self.update, daemon=True,

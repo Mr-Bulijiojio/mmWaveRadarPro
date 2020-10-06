@@ -45,8 +45,8 @@ class TrackandFall(threading.Thread):
         self.confirmedroot = []
         self.Z_k_prev = numpy.mat([])
         self.frameData = np.array([0, 0, 0])
-        self.system = system
         self.track_zero_flag = True
+        self.system = system
         self.logger = logger
         # 线程控制相关
         self.ComportOK = False
@@ -91,6 +91,13 @@ class TrackandFall(threading.Thread):
             return
         self.logger.info("Open TrackModule module successfully")
         print("Open TrackModule module successfully")
+        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
+        self.byteBufferLength = 0
+        self.testroot = []
+        self.confirmedroot = []
+        self.Z_k_prev = numpy.mat([])
+        self.frameData = np.array([0, 0, 0])
+        self.track_zero_flag = True
         self.ComportOK = True
 
     def _auto_close(self):

@@ -77,14 +77,11 @@ def test_call_number():
     number = 19981480981
     # 直接一个for循环，循环号码
     # 使用adb打电话
-
     call = os.popen('adb shell am start -a android.intent.action.CALL -d tel:%s' % number)
     # 这里的sleep时间基本就是你想让通话保持的时间了
-    print(call)
     time.sleep(30)
     # 挂断电话
     end = os.popen('adb shell input keyevent 6')  # code6是挂断
-    print(end)
     time.sleep(4)
 
 def socketget(gui):

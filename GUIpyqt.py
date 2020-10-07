@@ -285,6 +285,7 @@ class MainUi(QtWidgets.QMainWindow):
                     self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
                                            'border-color: rgb(255, 170, 0);background-color: rgb(255,0,102);')
                 if self.Call:
+                    self.Call_XOR()
                     tmpthread = threading.Thread(target= self.Fun_call)
                     tmpthread.start()
             elif self.txtcolor_fall:

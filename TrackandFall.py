@@ -450,13 +450,14 @@ class TrackandFall(threading.Thread):
                                 z = detObj["z"]
                                 tmp = np.array([[0, 0, 0]])
                                 if len(x) != 0:
-                                    core_samples, cluster_ids = dbscan(np.vstack((x, y, z)).T, eps=0.3, min_samples=3)
+                                    core_samples, cluster_ids = dbscan(np.vstack((x, y, z)).T, eps=0.4, min_samples=3)
                                     df = pandas.DataFrame(np.c_[np.vstack((x, y, z)).T, cluster_ids],
                                                           columns=['x', 'y', 'z', 'cluster_id'])
                                     df = df[df.cluster_id != -1]
                                     count = df['cluster_id'].value_counts()
 
                                     x = []
+
                                     y = []
                                     z = []
                                     if count.shape[0] >= 1:

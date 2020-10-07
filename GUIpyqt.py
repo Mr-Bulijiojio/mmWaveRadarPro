@@ -25,6 +25,7 @@ from PyQt5.QtCore import Qt
 import logging
 import re
 import winsound
+import threading
 
 class MainUi(QtWidgets.QMainWindow):
     left = 100
@@ -36,16 +37,19 @@ class MainUi(QtWidgets.QMainWindow):
     output_heart=[0 for j in range(0, length) ]
     poss=0
     FH = True
+    Call = False
     # item=[]
     textforfall=['跌倒检测：\n']+['' for _ in range(9)]
 
-    def __init__(self, datalink, sendcmdfun, logger=logging):
+    def __init__(self, datalink, sendcmdfun, logger=logging, Fun_call=None):
         super().__init__()
         self.datadic = datalink
         self.title = 'Contoller'
         self.sendcmd = sendcmdfun
         self.txtcolor_fall = False
         self.init_ui()
+        self.Fun_call = Fun_call
+
 
     def init_ui(self):
         self.setWindowTitle(self.title)
@@ -118,7 +122,8 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.btn5 = QtWidgets.QPushButton("FD Start")
         self.btn5.clicked.connect(lambda: self.FH_XOR())
-
+        self.btn6 = QtWidgets.QPushButton("Call accept")
+        self.btn6.clicked.connect(lambda: self.Call_XOR())
         #布局
         self.left_layout.addWidget(self.lb1, 0, 0, 1, 2)
         self.left_layout.addWidget(plot_Rate_breath, 1, 0, 3, 2)
@@ -142,6 +147,7 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.control_layout.addWidget(self.lb4, 0, 0, 1, 2)
         self.control_layout.addWidget(self.lb5, 0, 2, 1, 2)
+        self.control_layout.addWidget(self.btn6,2,3)
         self.control_layout.addWidget(btn1, 1, 0)
         self.control_layout.addWidget(btn2, 1, 1)
         self.control_layout.addWidget(btn3, 1, 2)
@@ -167,6 +173,9 @@ class MainUi(QtWidgets.QMainWindow):
     def FH_XOR(self):
         self.FH = not self.FH
         self.btn5.setText("FD Start" if self.FH else "FD Close")
+    def Call_XOR(self):
+        self.Call = not self.Call
+        self.btn6.setText("Call close" if self.Call else "Call Accept")
 
     def resizeEvent(self, a0: QtGui.QResizeEvent):
         #缩放窗口事件！
@@ -183,7 +192,7 @@ class MainUi(QtWidgets.QMainWindow):
         # w.resize(600,600)
         w.setFixedWidth(int(self.width * 1/3))
         w.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        scale = 5
+        scale = 3
         #坐标系
         gx = gl.GLGridItem()
         gx.rotate(90, 0, 1, 0)
@@ -275,6 +284,9 @@ class MainUi(QtWidgets.QMainWindow):
                     self.txtcolor_fall = True
                     self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
                                            'border-color: rgb(255, 170, 0);background-color: rgb(255,0,102);')
+                if self.Call:
+                    tmpthread = threading.Thread(target= self.Fun_call)
+                    tmpthread.start()
             elif self.txtcolor_fall:
                 self.txtcolor_fall = False
                 self.txt.setStyleSheet('border-width: 1px;border-style: solid;'

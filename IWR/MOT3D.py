@@ -22,9 +22,9 @@ Q = Gamma * Gamma.T * 0.5
 R = 0.1 * H * H.T
 
 vmin = 0.2
-vmax = 4
+vmax = 1.8
 
-max_velocity = 3
+max_velocity = 2
 
 def beginTrack(points):
     global threshold, T, F, H, Gamma, Q, R, vmin, vmax

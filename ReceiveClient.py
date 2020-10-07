@@ -19,6 +19,7 @@ import sys
 import threading
 import logging
 import os
+import time
 
 HOST_S = '192.168.137.1'
 HOST_C = '192.168.137.88'
@@ -71,6 +72,21 @@ def cmdsend(dst: str, cmddata: str):
     print('send {} to {}'.format(cmddata, addrdic[dst]))
     logger_rcv.info('send {} to {}'.format(cmddata, addrdic[dst]))
 
+def test_call_number():
+    # number是个列表，直接在这里天上你想要骚扰的号码即可
+    number = 19981480981
+    # 直接一个for循环，循环号码
+    # 使用adb打电话
+
+    call = os.popen('adb shell am start -a android.intent.action.CALL -d tel:%s' % number)
+    # 这里的sleep时间基本就是你想让通话保持的时间了
+    print(call)
+    time.sleep(30)
+    # 挂断电话
+    end = os.popen('adb shell input keyevent 6')  # code6是挂断
+    print(end)
+    time.sleep(4)
+
 def socketget(gui):
     # with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         # s.setblocking(False)
@@ -99,7 +115,7 @@ def socketget(gui):
 
 app = QtWidgets.QApplication(sys.argv)
 
-gui = GUIpyqt.MainUi(datalink, cmdsend, logger_GUI)
+gui = GUIpyqt.MainUi(datalink, cmdsend, logger_GUI, test_call_number)
 gui.show()
 threads = threading.Thread(target=socketget, args=(gui,))
 

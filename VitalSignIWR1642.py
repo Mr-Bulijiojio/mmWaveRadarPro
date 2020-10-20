@@ -17,32 +17,42 @@ import socket
 class TwoRate(threading.Thread):
     test_count_dataok = 0
     test_count_try = 0
-
+    if_Screen = True
+    CLIport = None
+    Dataport = None
+    Screenport = None
     def __init__(self, addr_2Rate=("127.0.0.1", 12003), addr_server=("127.0.0.1", 12000),
-                 CLIPortID=10, DataPortID=9, system="Linux", logger=logging,
+                 CLIPortID=10, DataPortID=9, SCID=13, system="Linux", logger=logging,
                  configFileName='xwr1642_profile_VitalSigns_20fps_Front.cfg'):
         super().__init__(daemon=True)
-        self.CLIport = None
-        self.Dataport = None
-        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
-        self.byteBufferLength = 0
-        self.Breathsignal = list(range(0, 250))
-        self.Heartbeatsignal = list(range(0, 250))
-        self.configParameters = {}
-        self.detObj = {}
+        # 传入变量的初始化
         self.logger = logger
-        self.breathOK = True
-        self.ComportOK = False
+        self.system = system
+        self.SCID = SCID
+        # socket
         self.addr_2Rate = addr_2Rate
         self.addr_server = addr_server
         self.socket_Rate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket_Rate.bind(self.addr_2Rate)
         self.socket_Rate.setblocking(False)
-        # self.socket_Rate.sendto(b'R',addr_server)
-        self.system = system
 
+        self._init_data()
+
+        # start the port
+        self.ComportOK = False
         self.start_conf = [configFileName, CLIPortID, DataPortID]
         self._auto_start(*self.start_conf)
+
+
+
+    def _init_data(self):
+        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
+        self.byteBufferLength = 0
+        self.configParameters = {}
+        self.detObj = {}
+        self.breathOK = True
+        print("init data successful")
+        # self.ComportOK = False
 
     def _auto_start(self, configFileName, CLIPortID, DataPortID):
         system = self.system
@@ -54,6 +64,7 @@ class TwoRate(threading.Thread):
         except Exception as err:
             self.logger.error("Open Com Fail...\nThere is the error report:\n{}\n*********************************".format(err))
             return
+
         try:
             self.parseConfigFile(configFileName)
         except Exception as err:
@@ -64,11 +75,10 @@ class TwoRate(threading.Thread):
             return
         else:
             self.logger.info("Com open success")
+
         self.logger.info("Open TrackModule module successfully")
-        # print("Open VitalSign module successfully")
         self.ComportOK = True
-        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
-        self.byteBufferLength = 0
+        self._init_data()
         self.logger.debug("breathOK:{} ComportOK:{}".format(self.breathOK,self.ComportOK))
 
     def _auto_close(self):
@@ -85,12 +95,15 @@ class TwoRate(threading.Thread):
         if system == "Linux":
             self.CLIport = serial.Serial('/dev/My_Serial%d' % CPID, 115200)
             self.Dataport = serial.Serial('/dev/My_Serial%d' % DPID, 921600)
+            if self.if_Screen:
+                self.Screenport=serial.Serial('/dev/My_Serial%d' % self.SCID, 9600)
 
         # Windows
         elif system == "Windows":
             self.CLIport = serial.Serial('COM%d' % CPID, 115200)
             self.Dataport = serial.Serial('COM%d' % DPID, 921600)
-
+            if self.if_Screen:
+                self.Screenport=serial.Serial('COM%d' % self.SCID, 9600)
         # Read the configuration file and send it to the board
         config = [line.rstrip('\r\n') for line in open(configFileName)]
         for i in config:
@@ -174,6 +187,8 @@ class TwoRate(threading.Thread):
         elif data == b"Start\x00":
             if not self.ComportOK:
                 self._auto_start(*self.start_conf)
+        elif data == b"dataclear\x00":
+            self._init_data()
         else:
             print('unknown cmd...')
             self.logger.warning("unknown cmd...")
@@ -343,6 +358,8 @@ class TwoRate(threading.Thread):
                     # vitalsign["sumEnergyHeartWfm"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
                     vitalsign["motionDetectedFlag"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+                    if vitalsign["motionDetectedFlag"] == 0:
+                        vitalsign["heartRateEst_FFT"] = vitalsign["breathingRateEst_FFT"] = 0
                     idX += 44
                     dataOK = 1
 
@@ -371,7 +388,15 @@ class TwoRate(threading.Thread):
 
         # Read and parse the received data
         sendbin = PB.Rate_encode(vitalsign)
-
+        if self.if_Screen:
+            FF = b"\xff\xff\xff"
+            # print(vitalsign)
+            if not vitalsign['breathingRateEst_FFT']*vitalsign['heartRateEst_FFT']==0:
+                self.Screenport.write(('t3.txt="%d"' % int(vitalsign['breathingRateEst_FFT'])).encode()+FF)
+                self.Screenport.write(('t2.txt="%d"' % int(vitalsign['heartRateEst_FFT'])).encode()+FF)
+            time.sleep(0.01)
+            self.Screenport.write(('add 2,0,%d' % int(vitalsign["outputFilterBreathOut"]*20+64)).encode()+FF)
+            self.Screenport.write(('add 1,0,%d' % int(vitalsign['outputFilterHeartOut']*20+64)).encode()+FF)
         self.socket_Rate.sendto(sendbin, self.addr_server)
         self.logger.debug("send a frame:\n{}".format(str(sendbin)))
         self.breathOK = True
@@ -412,7 +437,6 @@ class TwoRate(threading.Thread):
                 except Exception as Z:
                     self.logger.error("parsedataerr:{}".format(Z))
                     raise KeyboardInterrupt
-                    continue
                 self.test_count_try += 1
                 self.logger.debug("dataOK?".format())
                 if dataOk:

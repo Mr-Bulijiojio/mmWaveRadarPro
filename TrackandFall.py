@@ -32,27 +32,15 @@ class TrackandFall(threading.Thread):
     test_count_dataok = 0
     test_count_fallok = 0
     test_count_trackok = 0
-
+    CLIport = None
+    Dataport = None
     def __init__(self, addr_track=("127.0.0.1", 12001), addr_fall=("127.0.0.1", 12002), addr_server=("127.0.0.1", 12000),
                  CLIPortID=4, DataPortID=5, system="Linux", logger=logging,
                  configFileName='profile_iwr6843_ods_3d.cfg'):
         super().__init__(daemon=True)
-        self.CLIport=None
-        self.Dataport=None
-        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
-        self.byteBufferLength = 0
-        self.testroot = []
-        self.confirmedroot = []
-        self.Z_k_prev = numpy.mat([])
-        self.frameData = np.array([0, 0, 0])
-        self.track_zero_flag = True
+        #传入变量的初始化
         self.system = system
         self.logger = logger
-        # 线程控制相关
-        self.ComportOK = False
-        self.fallOK = True
-        self.trackOK = True
-        self.step = 0
         # socket
         self.addr_track = addr_track
         self.addr_fall = addr_fall
@@ -65,10 +53,26 @@ class TrackandFall(threading.Thread):
         self.socket_Fall.bind(self.addr_fall)
         self.socket_Fall.setblocking(False)
         self.socket_Fall.sendto(b"F", addr_server)
-        # 开启
-        self.start_conf = [configFileName, CLIPortID, DataPortID]
 
+        self._init_data()
+        # 开启port
+        self.ComportOK = False
+        self.start_conf = [configFileName, CLIPortID, DataPortID]
         self._auto_start(*self.start_conf)
+
+    def _init_data(self):
+        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
+        self.byteBufferLength = 0
+        self.testroot = []
+        self.confirmedroot = []
+        self.Z_k_prev = numpy.mat([])
+        self.frameData = np.array([0, 0, 0])
+        self.track_zero_flag = True
+        # 线程控制相关
+        self.fallOK = True
+        self.trackOK = True
+        self.step = 0
+        print("init data successful")
 
     def _auto_start(self, configFileName, CLIPortID, DataPortID):
         system = self.system
@@ -90,15 +94,11 @@ class TrackandFall(threading.Thread):
             # print("There is the error report:\n{}\n****************************".format(err))
             return
         self.logger.info("Open TrackModule module successfully")
-        print("Open TrackModule module successfully")
-        self.byteBuffer = np.zeros(2 ** 15, dtype='uint8')
-        self.byteBufferLength = 0
-        self.testroot = []
-        self.confirmedroot = []
-        self.Z_k_prev = numpy.mat([])
-        self.frameData = np.array([0, 0, 0])
-        self.track_zero_flag = True
         self.ComportOK = True
+        print("Open TrackModule module successfully")
+
+        self._init_data()
+
 
     def _auto_close(self):
         if self.CLIport:
@@ -339,6 +339,8 @@ class TrackandFall(threading.Thread):
         elif data == b"Start\x00":
             if not self.ComportOK:
                 self._auto_start(*self.start_conf)
+        elif data == b"dataclear\x00":
+            self._init_data()
         else:
             print('unknown cmd...')
 

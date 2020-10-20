@@ -94,7 +94,7 @@ else:
 
 try:
     tworate = VitalSign.TwoRate(addr_2Rate=TwoRate, addr_server=ServerHost,
-                                logger=logger_rate,
+                                logger=logger_rate, SCID=4,
                                 CLIPortID=CLIPortID[1], DataPortID=DataPortID[1], system=SystemEnv)
     tworate.start()
 except Exception as z:

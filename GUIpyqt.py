@@ -85,11 +85,15 @@ class MainUi(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_widget)  # 设置窗口主部件
 
         self.lb1 = QtWidgets.QLabel("呼吸速率:0")
+        self.lb1.setStyleSheet("color:rgb(0,0,0,255);font-size:25px;font-weight:bold;font-family:Roman times;")
         self.lb2 = QtWidgets.QLabel("心跳速率:0")
+        self.lb2.setStyleSheet("color:rgb(0,0,0,255);font-size:25px;font-weight:bold;font-family:Roman times;")
         self.lb3 = QtWidgets.QLabel("跌倒检测：")
+        self.lb3.setStyleSheet("color:rgb(0,0,0,255);font-size:25px;font-weight:bold;font-family:Roman times;")
         self.lb4 = QtWidgets.QLabel('呼吸心跳雷达：')
         self.lb5 = QtWidgets.QLabel('航迹跌倒雷达：')
         self.lb6 = QtWidgets.QLabel('目标检测与跟踪')
+        self.lb6.setStyleSheet("color:rgb(0,0,0,255);font-size:25px;font-weight:bold;font-family:Roman times;")
         self.txt = QtWidgets.QLabel('')
         self.txt.setFrameShape(QFrame.Box)
         self.txt.setStyleSheet('border-width: 1px;border-style: solid;'
@@ -119,7 +123,10 @@ class MainUi(QtWidgets.QMainWindow):
         btn3.clicked.connect(lambda: self.sendcmd('F', 'Start'))
         btn4 = QtWidgets.QPushButton('FT down')
         btn4.clicked.connect(lambda: self.sendcmd('F', 'Close'))
-
+        btn7 = QtWidgets.QPushButton('R clear')
+        btn7.clicked.connect(lambda: self.sendcmd('R', 'dataclear'))
+        btn8 = QtWidgets.QPushButton('FT clear')
+        btn8.clicked.connect(lambda: self.sendcmd('F', 'dataclear'))
         self.btn5 = QtWidgets.QPushButton("FD Start")
         self.btn5.clicked.connect(lambda: self.FH_XOR())
         self.btn6 = QtWidgets.QPushButton("Call accept")
@@ -147,19 +154,18 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.control_layout.addWidget(self.lb4, 0, 0, 1, 2)
         self.control_layout.addWidget(self.lb5, 0, 2, 1, 2)
-        self.control_layout.addWidget(self.btn6,2,3)
         self.control_layout.addWidget(btn1, 1, 0)
         self.control_layout.addWidget(btn2, 1, 1)
         self.control_layout.addWidget(btn3, 1, 2)
         self.control_layout.addWidget(btn4, 1, 3)
-        self.control_layout.addWidget(self.btn5, 2, 2)
+        self.control_layout.addWidget(self.btn5, 3, 2)
+        self.control_layout.addWidget(self.btn6, 3, 3)
+        self.control_layout.addWidget(btn7, 2, 1)
+        self.control_layout.addWidget(btn8, 2, 3)
         self.right_layout.setRowStretch(0, 1)
         self.right_layout.setRowStretch(1, 1)
 
-        # self.plot_Rate_breath = self.pw.plot()
-        # plot_Rate_heart.setYRange(max=1, min=0)
-        # plot_Rate_breath.setYRange(max=1, min=0)
-        # self.plot_Track = plot_Track.plot([0])
+
         self.plot_Rate_breath = plot_Rate_breath.plot(pen='g', symbol=None)
         self.plot_Rate_heart = plot_Rate_heart.plot( pen='y', symbol=None)
 
@@ -246,8 +252,9 @@ class MainUi(QtWidgets.QMainWindow):
         if T:
             self.draw_track(self.datadic['T'])
         if R:
-            self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
-            self.lb2.setText('心率:%d' % self.datadic['R'][3])
+            if not self.datadic['R'][2]*self.datadic['R'][3]==0:
+                self.lb1.setText('呼吸率：%d' % self.datadic['R'][2])
+                self.lb2.setText('心率:%d' % self.datadic['R'][3])
             QtWidgets.QApplication.processEvents()
             self.output_breath[self.poss] = self.datadic['R'][0]
             # self.output_breath=self.output_breath[1:]

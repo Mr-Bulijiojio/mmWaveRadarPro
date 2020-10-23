@@ -21,6 +21,7 @@ class TwoRate(threading.Thread):
     CLIport = None
     Dataport = None
     Screenport = None
+    outHeartNew_CM = 0
     def __init__(self, addr_2Rate=("127.0.0.1", 12003), addr_server=("127.0.0.1", 12000),
                  CLIPortID=10, DataPortID=9, SCID=13, system="Linux", logger=logging,
                  configFileName='xwr1642_profile_VitalSigns_20fps_Front.cfg'):
@@ -331,11 +332,11 @@ class TwoRate(threading.Thread):
                     idX += 4
                     vitalsign["heartRateEst_FFT"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
-                    # vitalsign["heartRateEst_FFT_4Hz"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0] / 2
+                    vitalsign["heartRateEst_FFT_4Hz"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0] / 2
                     idX += 4
-                    # vitalsign["heartRateEst_xCorr"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+                    vitalsign["heartRateEst_xCorr"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
-                    # vitalsign["heartRateEst_peakCount"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+                    vitalsign["heartRateEst_peakCount"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
                     vitalsign["breathingRateEst_FFT"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
@@ -347,21 +348,51 @@ class TwoRate(threading.Thread):
                     idX += 4
                     # vitalsign["confidenceMetricBreathOut_xCorr"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
-                    # vitalsign["confidenceMetricHeartOut"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+                    vitalsign["confidenceMetricHeartOut"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
-                    # vitalsign["confidenceMetricHeartOut_4Hz"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+                    vitalsign["confidenceMetricHeartOut_4Hz"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
-                    # vitalsign["confidenceMetricHeartOut_xCorr"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+                    vitalsign["confidenceMetricHeartOut_xCorr"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
                     # vitalsign["sumEnergyBreathWfm"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
                     # vitalsign["sumEnergyHeartWfm"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
                     idX += 4
                     vitalsign["motionDetectedFlag"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
-                    if vitalsign["motionDetectedFlag"] == 0:
-                        vitalsign["heartRateEst_FFT"] = vitalsign["breathingRateEst_FFT"] = 0
+                    # if vitalsign["motionDetectedFlag"] == 0:
+                    #     vitalsign["heartRateEst_FFT"] = vitalsign["breathingRateEst_FFT"] = 0
                     idX += 44
                     dataOK = 1
+
+                    # define
+                    ALPHA_HEARTRATE_CM = 0.6
+                    THRESH_HEART_CM = 0.25
+                    THRESH_DIFF_EST = 20
+                    MIN_HEARTRATE = 75
+                    BACK_THRESH_BPM = 4
+
+                    heartRate_CM = vitalsign["confidenceMetricHeartOut"]
+                    heartRate_FFT = vitalsign["heartRateEst_FFT"]
+                    heartRate_Pk = vitalsign["heartRateEst_peakCount"]
+                    # heartRate_xCorr = vitalsign["heartRateEst_xCorr"]
+                    # BreathingRate_FFT = vitalsign["breathingRateEst_FFT"]
+                    # # new means to get heartrate
+
+                    outHeartPrev_CM = self.outHeartNew_CM
+                    self.outHeartNew_CM = ALPHA_HEARTRATE_CM*(heartRate_CM) + (1-ALPHA_HEARTRATE_CM)*outHeartPrev_CM
+                    diffEst_heartRate = abs(heartRate_FFT - heartRate_Pk)
+                    if self.outHeartNew_CM > THRESH_HEART_CM or diffEst_heartRate < THRESH_DIFF_EST :
+
+                        heartRateEstDisplay = heartRate_FFT
+                    else:
+                        heartRateEstDisplay =heartRate_Pk
+                    print([self.outHeartNew_CM, diffEst_heartRate])
+                    print(vitalsign["heartRateEst_FFT"],
+                          vitalsign["heartRateEst_peakCount"], "==>",
+                          heartRateEstDisplay)
+                    vitalsign["heartRateEst_FFT"] = heartRateEstDisplay
+                    if vitalsign["heartRateEst_FFT"] < MIN_HEARTRATE:
+                        vitalsign["heartRateEst_FFT"] = max(heartRate_FFT, heartRate_Pk)
 
             # Remove already processed data
 
@@ -380,7 +411,9 @@ class TwoRate(threading.Thread):
                     self.byteBufferLength = 0
 
             # self.logger.debug("shift finish")
-
+        # vitalsign["heartRateEst_FFT"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
+        # vitalsign["heartRateEst_FFT_4Hz"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0] / 2
+        # vitalsign["heartRateEst_xCorr"] = struct.unpack('<f', self.byteBuffer[idX:idX + 4])[0]
         # self.logger.debug("return parse")
         return dataOK, frameNumber, vitalsign
 
